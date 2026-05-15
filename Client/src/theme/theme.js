@@ -21,7 +21,7 @@ export const antdTheme = {
     colorInfo: colors.info,
     borderRadius: 12,
     fontFamily:
-      "'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+      "'Space Grotesk', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
   },
   components: {
     Button: { controlHeight: 40, fontWeight: 600 },
