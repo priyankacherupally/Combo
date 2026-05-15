@@ -107,9 +107,9 @@ export default function DashboardPage() {
             <span className={styles.underline} ref={underlineRef} />
           </span>
         </h1>
-        <p className={styles.subtitle} ref={subtitleRef}>
+        {/* <p className={styles.subtitle} ref={subtitleRef}>
           Crafted to feel alive — your Patternlab workspace.
-        </p>
+        </p> */}
       </div>
 
       {/*

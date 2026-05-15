@@ -6,7 +6,7 @@ export class DashboardService {
   getSummary(): DashboardSummaryDto {
     return {
       title: 'Welcome',
-      name: 'Patternlab',
+      name: 'Priyanka',
     };
   }
 
