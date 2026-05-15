@@ -3,22 +3,22 @@ import { ENDPOINTS } from '../../config/apiConfig.js';
 
 export const dashboardService = {
   getSummary: async () => {
-    const { data } = await api.get(ENDPOINTS.dashboard.summary);
+    const { data } = await api.get(ENDPOINTS.dashboard.SUMMARY);
     return data;
   },
 
   getStats: async () => {
-    const { data } = await api.get(ENDPOINTS.dashboard.stats);
+    const { data } = await api.get(ENDPOINTS.dashboard.STATS);
     return data;
   },
 
   getActivity: async () => {
-    const { data } = await api.get(ENDPOINTS.dashboard.activity);
+    const { data } = await api.get(ENDPOINTS.dashboard.ACTIVITY);
     return data;
   },
 
   getQuickLinks: async () => {
-    const { data } = await api.get(ENDPOINTS.dashboard.quickLinks);
+    const { data } = await api.get(ENDPOINTS.dashboard.QUICK_LINKS);
     return data;
   },
 };
