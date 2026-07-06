@@ -2,12 +2,20 @@
 
 .layout {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: $bg-soft;
 }
 
+.body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
 .content {
-  padding: 32px;
-  max-width: 1440px;
-  margin: 0 auto;
-  width: 100%;
+  flex: 1;
+  overflow-y: auto;
+  min-width: 0;
+  padding-left: 4px;
 }

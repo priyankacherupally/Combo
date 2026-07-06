@@ -12,7 +12,7 @@ import { useDashboardSummary } from '../features/dashboard/dashboardQueries.js';
 import styles from './DashboardPage.module.scss';
 
 export default function DashboardPage() {
-  const { data, isLoading } = useDashboardSummary();
+  const { data, isLoading, isError } = useDashboardSummary();
 
   const rootRef = useRef(null);
   const greetingRef = useRef(null);
@@ -77,7 +77,7 @@ export default function DashboardPage() {
     return () => ctx.revert();
   }, [isLoading]);
 
-  if (isLoading) {
+  if (isLoading && !isError) {
     return (
       <div className={styles.page}>
         <div className={styles.welcomeWrap}>

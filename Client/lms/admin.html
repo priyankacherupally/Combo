@@ -1,0 +1,2131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin – SeaTrace LMS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Nunito', sans-serif; background: #f5f5f5; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+    /* ── Navbar ── */
+    .navbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; height: 52px; background: #fff;
+      border-bottom: 1px solid #DFE2E6; flex-shrink: 0; z-index: 100;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .brand-text { font-size: 15px; font-weight: 800; color: #111; letter-spacing: 1px; text-transform: uppercase; }
+    .brand-text .sea { color: #5189F3; }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .admin-badge {
+      font-size: 11px; font-weight: 700; color: #5189F3;
+      background: #EEF3FF; border: 1px solid #c7d7fd;
+      padding: 3px 10px; border-radius: 2px; letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .nav-icons { display: flex; align-items: center; gap: 2px; }
+    .icon-btn {
+      width: 36px; height: 36px; background: none; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: #5E5E60; border-radius: 0; transition: background 0.15s, color 0.15s;
+    }
+    .icon-btn:hover { background: #E4EEFF; color: #5189F3; }
+    .icon-btn svg { width: 18px; height: 18px; }
+
+    /* ── Layout ── */
+    .layout { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px; background: #fff; border-right: 1px solid #DFE2E6;
+      display: flex; flex-direction: column; flex-shrink: 0;
+      padding: 16px 0;
+    }
+    .sidebar-label {
+      font-size: 10px; font-weight: 700; color: #bbb;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      padding: 0 20px 10px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 20px; cursor: pointer; border: none; background: none;
+      width: 100%; text-align: left; font-family: 'Nunito', sans-serif;
+      font-size: 14px; font-weight: 600; color: #555;
+      border-left: 3px solid transparent;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+    }
+    .nav-item:hover { background: #F8FAFF; color: #5189F3; }
+    .nav-item.active {
+      background: #EEF3FF; color: #5189F3;
+      border-left-color: #5189F3;
+    }
+    .nav-item svg { width: 17px; height: 17px; flex-shrink: 0; }
+
+    .sidebar-divider { height: 1px; background: #F0F0F0; margin: 10px 0; }
+
+    .sidebar-bottom { margin-top: auto; padding: 12px 0; border-top: 1px solid #F0F0F0; }
+
+    /* ── Main content ── */
+    .main { flex: 1; overflow-y: auto; padding: 32px; }
+
+    /* ── Page header ── */
+    .page-header { margin-bottom: 28px; }
+    .page-header h1 { font-size: 20px; font-weight: 800; color: #111; margin-bottom: 4px; }
+    .page-header p  { font-size: 13px; color: #888; }
+
+    /* ── Content sections ── */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* Placeholder card */
+    .placeholder-card {
+      background: #fff; border: 1px dashed #DFE2E6;
+      border-radius: 2px; padding: 64px 32px;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 12px; text-align: center;
+    }
+    .placeholder-icon { color: #c7d7fd; }
+    .placeholder-icon svg { width: 48px; height: 48px; }
+    .placeholder-title { font-size: 15px; font-weight: 700; color: #aaa; }
+    .placeholder-sub   { font-size: 13px; color: #ccc; max-width: 320px; line-height: 1.6; }
+
+    /* ── Leaderboard table ── */
+    .table-card { background: #fff; border: 1px solid #DFE2E6; border-radius: 2px; }
+
+    .table-toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px; border-bottom: 1px solid #F0F0F0;
+    }
+    .table-search-wrap {
+      position: relative; width: 240px;
+      display: flex; align-items: center;
+    }
+    .table-search-wrap svg { position: absolute; left: 10px; color: #aaa; pointer-events: none; }
+    .table-search-wrap input {
+      width: 100%; height: 32px; padding: 0 12px 0 32px;
+      border: 1px solid #DFE2E6; border-radius: 2px;
+      font-family: 'Nunito', sans-serif; font-size: 13px; color: #111; outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .table-search-wrap input:focus { border-color: #5189F3; box-shadow: 0 0 0 2px rgba(81,137,243,0.12); }
+    .table-search-wrap input::placeholder { color: #ccc; }
+    .table-count { font-size: 12px; color: #aaa; font-weight: 600; }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { background: #F8FAFF; }
+    th {
+      padding: 11px 16px; text-align: left;
+      font-size: 11px; font-weight: 700; color: #888;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      border-bottom: 1px solid #DFE2E6; white-space: nowrap;
+    }
+    td {
+      padding: 13px 16px; font-size: 13px; color: #333;
+      border-bottom: 1px solid #F5F5F5; vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #FAFBFF; }
+
+    /* S.No */
+    .sno { font-size: 12px; color: #bbb; font-weight: 700; }
+
+    /* Avatar + name */
+    .user-cell { display: flex; align-items: center; gap: 10px; }
+    .avatar {
+      width: 30px; height: 30px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 800; color: #fff; flex-shrink: 0;
+    }
+    .user-name  { font-size: 13px; font-weight: 600; color: #111; }
+    .user-email { font-size: 11px; color: #aaa; }
+
+    /* Role badge */
+    .role-badge {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      padding: 2px 9px; border-radius: 2px; letter-spacing: 0.03em;
+    }
+    .role-supervisor  { background: #EEF3FF; color: #5189F3; border: 1px solid #c7d7fd; }
+    .role-operator    { background: #F0FDF4; color: #16a34a; border: 1px solid #bbf7d0; }
+    .role-qc          { background: #FFF7ED; color: #ea580c; border: 1px solid #fed7aa; }
+    .role-trainee     { background: #F5F3FF; color: #7c3aed; border: 1px solid #ddd6fe; }
+
+    /* Progress levels */
+    .progress-cell { display: flex; flex-direction: column; gap: 5px; }
+    .level-dots { display: flex; align-items: center; gap: 5px; }
+    .level-dot {
+      width: 22px; height: 22px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 800;
+      border: 1.5px solid #DFE2E6; color: #ccc;
+      transition: all 0.15s;
+    }
+    .level-dot.done  { background: #5189F3; border-color: #5189F3; color: #fff; }
+    .level-dot.current { background: #EEF3FF; border-color: #5189F3; color: #5189F3; }
+    .progress-bar-wrap { width: 120px; height: 4px; background: #F0F0F0; border-radius: 2px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: #5189F3; border-radius: 2px; transition: width 0.3s; }
+    .progress-text { font-size: 11px; color: #888; }
+
+    /* Last viewed */
+    .date-cell { font-size: 12px; color: #666; }
+    .date-cell .time { color: #bbb; font-size: 11px; }
+
+    /* Empty row */
+    .empty-row td { text-align: center; padding: 48px; color: #ccc; font-size: 13px; }
+
+    /* ── Quiz section ── */
+    .page-header-row { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; }
+    .btn-primary {
+      display: flex; align-items: center; gap: 6px;
+      background: #5189F3; color: #fff; border: none; border-radius: 2px;
+      padding: 8px 16px; font-family: 'Nunito', sans-serif;
+      font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.15s; white-space: nowrap;
+    }
+    .btn-primary:hover { background: #3d74e8; }
+    .btn-primary svg { width: 14px; height: 14px; }
+
+    .quiz-creator {
+      background: #fff; border: 1px solid #DFE2E6; border-radius: 2px;
+      padding: 24px; margin-bottom: 20px;
+    }
+    .quiz-creator-title { font-size: 14px; font-weight: 800; color: #111; margin-bottom: 18px; }
+    .qc-row { display: flex; gap: 16px; margin-bottom: 16px; align-items: flex-start; }
+    .qc-field { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
+    .qc-field label { font-size: 12px; font-weight: 700; color: #555; }
+    .qc-field select,
+    .qc-field input[type="text"] {
+      height: 36px; padding: 0 12px;
+      border: 1px solid #DFE2E6; border-radius: 2px;
+      font-family: 'Nunito', sans-serif; font-size: 13px; color: #111;
+      outline: none; background: #fff; transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .qc-field select:focus,
+    .qc-field input[type="text"]:focus { border-color: #5189F3; box-shadow: 0 0 0 2px rgba(81,137,243,0.12); }
+    .qc-field select:disabled { background: #f9f9f9; color: #bbb; cursor: not-allowed; }
+
+    .qc-toggle-field { flex: 0; min-width: 90px; }
+    .toggle-switch { display: flex; align-items: center; cursor: pointer; }
+    .toggle-switch input { display: none; }
+    .toggle-track {
+      width: 36px; height: 20px; background: #DFE2E6;
+      border-radius: 10px; position: relative; transition: background 0.2s;
+    }
+    .toggle-switch input:checked + .toggle-track { background: #5189F3; }
+    .toggle-thumb {
+      position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+      border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+      transition: left 0.2s;
+    }
+    .toggle-switch input:checked + .toggle-track .toggle-thumb { left: 18px; }
+
+    .qc-divider { height: 1px; background: #F0F0F0; margin: 16px 0 14px; }
+    .qc-questions-header {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 13px; font-weight: 700; color: #333; margin-bottom: 12px;
+    }
+    .btn-add-question {
+      background: none; border: 1px dashed #5189F3; color: #5189F3;
+      border-radius: 2px; padding: 5px 12px; cursor: pointer;
+      font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700;
+      transition: background 0.12s;
+    }
+    .btn-add-question:hover { background: #EEF3FF; }
+
+    .no-questions-hint {
+      padding: 28px; text-align: center; color: #ccc; font-size: 13px;
+      border: 1px dashed #DFE2E6; border-radius: 2px;
+    }
+
+    .q-card {
+      border: 1px solid #DFE2E6; border-radius: 2px;
+      padding: 14px 16px; margin-bottom: 10px; background: #FAFBFF;
+    }
+    .q-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .q-num { font-size: 12px; font-weight: 800; color: #5189F3; min-width: 22px; }
+    .q-type-tabs { display: flex; gap: 4px; flex: 1; }
+    .q-type-tab {
+      padding: 4px 10px; font-size: 11px; font-weight: 700;
+      border: 1px solid #DFE2E6; background: #fff; color: #888;
+      border-radius: 2px; cursor: pointer;
+      font-family: 'Nunito', sans-serif; transition: all 0.12s;
+    }
+    .q-type-tab.active { background: #5189F3; color: #fff; border-color: #5189F3; }
+    .q-type-tab:hover:not(.active) { background: #F8FAFF; color: #5189F3; border-color: #5189F3; }
+    .q-remove-btn {
+      background: none; border: none; cursor: pointer; color: #ccc;
+      font-size: 14px; padding: 2px 6px; border-radius: 2px;
+      transition: color 0.12s, background 0.12s;
+    }
+    .q-remove-btn:hover { color: #EF4444; background: #FFF5F5; }
+
+    .q-text {
+      width: 100%; min-height: 60px; padding: 9px 12px;
+      border: 1px solid #DFE2E6; border-radius: 2px;
+      font-family: 'Nunito', sans-serif; font-size: 13px; color: #111;
+      resize: vertical; outline: none; transition: border-color 0.15s;
+      margin-bottom: 10px; background: #fff;
+    }
+    .q-text:focus { border-color: #5189F3; box-shadow: 0 0 0 2px rgba(81,137,243,0.12); }
+
+    .q-option-row { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+    .q-option-row input[type="radio"] { accent-color: #5189F3; width: 16px; height: 16px; flex-shrink: 0; cursor: pointer; }
+    .q-opt-input {
+      flex: 1; height: 32px; padding: 0 10px;
+      border: 1px solid #DFE2E6; border-radius: 2px;
+      font-family: 'Nunito', sans-serif; font-size: 13px; color: #111;
+      outline: none; transition: border-color 0.15s;
+    }
+    .q-opt-input:focus { border-color: #5189F3; }
+    .q-option-hint { font-size: 11px; color: #bbb; margin-top: 2px; }
+
+    .q-tf { display: flex; gap: 20px; padding: 6px 0; }
+    .q-tf label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #333; cursor: pointer; }
+    .q-tf input[type="radio"] { accent-color: #5189F3; width: 16px; height: 16px; }
+    .q-short-note {
+      padding: 12px; background: #F8FAFF; border: 1px dashed #c7d7fd;
+      border-radius: 2px; font-size: 12px; color: #888; text-align: center;
+    }
+
+    .qc-actions {
+      display: flex; justify-content: flex-end; gap: 10px;
+      padding-top: 14px; border-top: 1px solid #F0F0F0; margin-top: 12px;
+    }
+    .btn-ghost {
+      padding: 8px 16px; background: none; border: 1px solid #DFE2E6;
+      border-radius: 2px; font-family: 'Nunito', sans-serif; font-size: 13px;
+      font-weight: 700; color: #666; cursor: pointer; transition: all 0.12s;
+    }
+    .btn-ghost:hover { border-color: #5189F3; color: #5189F3; background: #F8FAFF; }
+
+    /* Quiz list table additions */
+    .quiz-module-tag {
+      font-size: 11px; font-weight: 700; color: #5189F3;
+      background: #EEF3FF; border: 1px solid #c7d7fd;
+      padding: 2px 8px; border-radius: 2px;
+    }
+    .mandatory-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 2px;
+    }
+    .mandatory-yes { background: #F0FDF4; color: #16a34a; border: 1px solid #bbf7d0; }
+    .mandatory-no  { background: #F5F5F5; color: #aaa; border: 1px solid #e0e0e0; }
+
+    .action-btn {
+      background: none; border: none; cursor: pointer; padding: 5px;
+      border-radius: 2px; color: #bbb; transition: color 0.12s, background 0.12s;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .action-btn:hover { color: #EF4444; background: #FFF5F5; }
+    .action-btn.expand:hover { color: #5189F3; background: #EEF3FF; }
+    .action-btn svg { width: 15px; height: 15px; }
+
+    .q-expand-row { display: none; }
+    .q-expand-row.open { display: table-row; }
+    .q-expand-row td { padding: 0 !important; border-bottom: 1px solid #F0F0F0 !important; }
+    .q-expand-inner { padding: 12px 20px; background: #F8FAFF; }
+    .q-expand-item {
+      padding: 10px 0; border-bottom: 1px solid #EBEDF0;
+      font-size: 13px; color: #333;
+    }
+    .q-expand-item:last-child { border-bottom: none; }
+    .q-expand-qnum { font-size: 11px; font-weight: 800; color: #5189F3; }
+    .q-expand-type { font-size: 10px; color: #aaa; font-weight: 700; text-transform: uppercase; margin-left: 8px; }
+    .q-expand-opts { margin-top: 6px; display: flex; flex-direction: column; gap: 3px; }
+    .q-expand-opt { font-size: 12px; color: #666; display: flex; align-items: center; gap: 6px; }
+    .q-expand-opt.correct { color: #16a34a; font-weight: 700; }
+    .dot-correct { width: 7px; height: 7px; border-radius: 50%; background: #16a34a; display: inline-block; flex-shrink: 0; }
+    .dot-grey    { width: 7px; height: 7px; border-radius: 50%; background: #DFE2E6; display: inline-block; flex-shrink: 0; }
+
+    /* ── Certifications ── */
+    .cert-section-label {
+      font-size: 11px; font-weight: 700; color: #bbb;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+    }
+    .cert-section-label span { white-space: nowrap; }
+    .cert-section-label::after { content: ''; flex: 1; height: 1px; background: #F0F0F0; }
+
+    /* Cards grid */
+    .cert-cards-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 14px; margin-bottom: 28px;
+    }
+    .cert-card-sm {
+      background: #fff; border: 1px solid #DFE2E6; border-radius: 2px;
+      border-top: 3px solid #DFE2E6; padding: 14px 14px 12px;
+      display: flex; flex-direction: column;
+      transition: box-shadow 0.12s, transform 0.12s;
+    }
+    .cert-card-sm:hover { box-shadow: 0 3px 10px rgba(0,0,0,0.08); transform: translateY(-1px); }
+    .cert-sm-top { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+    .cert-sm-tier {
+      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 800;
+    }
+    .cert-sm-title { flex: 1; min-width: 0; }
+    .cert-sm-name { font-size: 13px; font-weight: 800; color: #111; line-height: 1.3; }
+    .cert-sm-desc { font-size: 11px; color: #bbb; margin-top: 2px; line-height: 1.4; }
+    .cert-sm-remove {
+      background: none; border: none; cursor: pointer; color: #ddd;
+      padding: 2px 3px; border-radius: 2px; flex-shrink: 0; line-height: 1;
+      transition: color 0.12s, background 0.12s;
+    }
+    .cert-sm-remove:hover { color: #EF4444; background: #FFF5F5; }
+    .cert-sm-remove svg { width: 13px; height: 13px; display: block; }
+    .cert-sm-role {
+      display: inline-flex; align-items: center;
+      font-size: 11px; font-weight: 700;
+      padding: 3px 10px; border-radius: 2px;
+      margin-bottom: 10px; align-self: flex-start; white-space: nowrap;
+    }
+    .cert-sm-criteria { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+    .cert-sm-row { display: flex; gap: 6px; align-items: flex-start; }
+    .cert-sm-lbl {
+      font-size: 10px; font-weight: 700; color: #ccc;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      min-width: 52px; flex-shrink: 0; padding-top: 1px;
+    }
+    .cert-sm-val { font-size: 11px; color: #666; line-height: 1.4; }
+    .cert-sm-footer {
+      border-top: 1px solid #F5F5F5; padding-top: 8px; margin-top: 10px;
+      display: flex; align-items: center; gap: 4px;
+      font-size: 11px; color: #bbb;
+    }
+    .cert-sm-footer svg { width: 11px; height: 11px; }
+
+    /* Add card */
+    .cert-add-card {
+      background: #FAFBFF; border: 1.5px dashed #DFE2E6; border-radius: 2px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 8px; cursor: pointer; min-height: 180px;
+      color: #ccc; transition: all 0.15s;
+    }
+    .cert-add-card:hover { border-color: #5189F3; color: #5189F3; background: #F0F4FF; }
+    .cert-add-card svg { width: 28px; height: 28px; }
+    .cert-add-card span { font-size: 12px; font-weight: 700; }
+
+    /* Add form panel */
+    .cert-creator {
+      background: #fff; border: 1px solid #DFE2E6; border-radius: 2px;
+      padding: 22px; margin-bottom: 16px;
+    }
+    .cert-creator-title { font-size: 14px; font-weight: 800; color: #111; margin-bottom: 18px; }
+    .cert-color-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+    .cert-color-swatch {
+      width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
+      border: 2.5px solid transparent; transition: transform 0.12s, border-color 0.12s;
+      flex-shrink: 0;
+    }
+    .cert-color-swatch:hover { transform: scale(1.2); }
+    .cert-color-swatch.selected { border-color: #111; transform: scale(1.12); }
+    .cert-tag-wrap {
+      min-height: 36px; padding: 4px 8px; display: flex; flex-wrap: wrap; gap: 4px;
+      border: 1px solid #DFE2E6; border-radius: 2px; cursor: text; align-items: center;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .cert-tag-wrap:focus-within { border-color: #5189F3; box-shadow: 0 0 0 2px rgba(81,137,243,0.12); }
+    .cert-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #EEF3FF; color: #5189F3; border: 1px solid #c7d7fd;
+      font-size: 11px; font-weight: 700; padding: 2px 6px 2px 8px; border-radius: 2px;
+    }
+    .cert-tag button {
+      background: none; border: none; cursor: pointer;
+      color: #5189F3; padding: 0; line-height: 1; font-size: 14px;
+    }
+    .cert-tag button:hover { color: #EF4444; }
+    .cert-tag-input {
+      border: none; outline: none; font-family: 'Nunito', sans-serif;
+      font-size: 13px; color: #111; flex: 1; min-width: 120px; padding: 2px 0; background: transparent;
+    }
+    .cert-tag-input::placeholder { color: #ccc; }
+
+    /* Holder table */
+    .cert-filter-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+    .cert-filter-pill {
+      padding: 5px 12px; border-radius: 2px;
+      border: 1px solid #DFE2E6; background: #fff;
+      font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700;
+      color: #888; cursor: pointer; transition: all 0.12s;
+    }
+    .cert-filter-pill:hover { border-color: #5189F3; color: #5189F3; }
+    .cert-filter-pill.active { background: #5189F3; border-color: #5189F3; color: #fff; }
+    .cert-table-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 700; padding: 3px 9px;
+      border-radius: 2px; white-space: nowrap;
+    }
+    .cert-role-sm {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      padding: 3px 9px; border-radius: 2px; white-space: nowrap;
+    }
+    .cert-status-active  { display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:2px; background:#F0FDF4; color:#16a34a; border:1px solid #bbf7d0; }
+    .cert-status-pending { display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:2px; background:#FFFBEB; color:#D97706; border:1px solid #FDE68A; }
+
+    /* ── Certificate Preview Modal ── */
+    .cert-preview-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 600;
+      background: rgba(8,18,36,0.65); backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center; padding: 20px;
+    }
+    .cert-preview-overlay.open { display: flex; }
+    .cert-preview-box {
+      background: #ECEEF2; border-radius: 4px; max-width: 820px; width: 100%;
+      max-height: 92vh; overflow-y: auto;
+      box-shadow: 0 28px 72px rgba(0,0,0,0.4);
+    }
+    .cert-preview-toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px; background: #fff; border-bottom: 1px solid #F0F0F0;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .cert-preview-label { font-size: 12px; font-weight: 700; color: #888; }
+    .cert-preview-body { padding: 24px; }
+    .cert-template-notice {
+      text-align: center; font-size: 11px; color: #92400E;
+      background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 2px;
+      padding: 8px 14px; margin-bottom: 16px;
+    }
+    /* Paper */
+    .certificate-paper {
+      background: #fff; position: relative;
+      padding: 54px 58px 46px;
+      box-shadow: 0 6px 28px rgba(0,0,0,0.12);
+    }
+    .cert-border-outer {
+      position: absolute; top: 14px; left: 14px; right: 14px; bottom: 14px;
+      border: 2px solid; pointer-events: none; z-index: 0;
+    }
+    .cert-border-inner {
+      position: absolute; top: 21px; left: 21px; right: 21px; bottom: 21px;
+      border-width: 0.5px; border-style: solid; pointer-events: none; z-index: 0;
+    }
+    .cert-co {
+      position: absolute; z-index: 3; pointer-events: none; line-height: 1;
+    }
+    .cert-co-tl { top: 5px; left: 5px; }
+    .cert-co-tr { top: 5px; right: 5px; }
+    .cert-co-bl { bottom: 5px; left: 5px; }
+    .cert-co-br { bottom: 5px; right: 5px; }
+    .cert-watermark {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%) rotate(-18deg);
+      font-size: 78px; font-weight: 900; color: rgba(0,0,0,0.028);
+      letter-spacing: 8px; white-space: nowrap; pointer-events: none;
+      text-transform: uppercase; user-select: none; z-index: 0;
+    }
+    .cert-content { position: relative; z-index: 1; }
+    .cert-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 22px; }
+    .cert-brand-block { display: flex; align-items: center; gap: 10px; }
+    .cert-brand-name { font-size: 13px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #111; line-height: 1.2; }
+    .cert-brand-sub { font-size: 9px; color: #bbb; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px; }
+    /* Medal */
+    .cert-medal-wrap { display: flex; flex-direction: column; align-items: center; }
+    .cert-ribbon {
+      width: 22px; height: 42px; margin-bottom: -10px; z-index: 0; position: relative;
+      clip-path: polygon(0 0, 100% 0, 100% 80%, 50% 100%, 0 80%);
+    }
+    .cert-medal {
+      width: 78px; height: 78px; border-radius: 50%; position: relative; z-index: 1;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cert-medal-inner {
+      width: 60px; height: 60px; border-radius: 50%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .cert-medal-tier { font-size: 17px; font-weight: 800; line-height: 1; }
+    .cert-medal-word { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+    /* Title */
+    .cert-title-block { text-align: center; margin-bottom: 12px; }
+    .cert-title-main { font-size: 32px; font-weight: 900; color: #0A1628; letter-spacing: 5px; text-transform: uppercase; line-height: 1.1; }
+    .cert-title-of { font-size: 20px; font-weight: 700; color: #0A1628; letter-spacing: 8px; text-transform: uppercase; }
+    .cert-h-divider { height: 1px; margin: 12px 0; }
+    .cert-presented-label { text-align: center; font-size: 10px; font-weight: 700; color: #bbb; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }
+    .cert-user-name { text-align: center; font-size: 28px; font-weight: 700; font-style: italic; margin-bottom: 2px; line-height: 1.2; }
+    .cert-user-name-underline { width: 280px; height: 1px; background: #E8EBF2; margin: 0 auto 14px; }
+    .cert-completion-label { text-align: center; font-size: 10px; font-weight: 700; color: #bbb; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+    .cert-course-title { text-align: center; font-size: 17px; font-weight: 800; color: #0A1628; margin-bottom: 12px; }
+    .cert-tier-row { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    .cert-tier-pill, .cert-eligible-pill { font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 2px; }
+    .cert-footer-divider { height: 1px; margin-bottom: 16px; }
+    .cert-footer-row { display: flex; justify-content: space-around; }
+    .cert-footer-item { text-align: center; min-width: 110px; }
+    .cert-footer-sig { font-size: 18px; font-style: italic; font-weight: 700; color: #333; margin-bottom: 3px; }
+    .cert-footer-val { font-size: 13px; font-weight: 700; color: #333; margin-bottom: 3px; }
+    .cert-footer-id { font-size: 10px; letter-spacing: 1px; font-family: monospace; color: #555; }
+    .cert-footer-underline { width: 100%; height: 1px; background: #DFE2E6; margin-bottom: 5px; }
+    .cert-footer-label { font-size: 9px; font-weight: 700; color: #bbb; text-transform: uppercase; letter-spacing: 2px; }
+    /* Preview & view buttons */
+    .cert-preview-btn {
+      margin-left: auto; background: none; border: none; cursor: pointer;
+      color: #ccc; font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; gap: 3px;
+      font-family: 'Nunito', sans-serif; padding: 2px 6px; border-radius: 2px;
+      transition: color 0.12s, background 0.12s;
+    }
+    .cert-preview-btn:hover { color: #5189F3; background: #EEF3FF; }
+    .cert-preview-btn svg { width: 12px; height: 12px; }
+    .cert-view-btn {
+      background: none; border: none; cursor: pointer; padding: 5px;
+      border-radius: 2px; color: #bbb; transition: color 0.12s, background 0.12s;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .cert-view-btn:hover { color: #5189F3; background: #EEF3FF; }
+    .cert-view-btn svg { width: 15px; height: 15px; }
+
+    /* ── Signing Authority strip ── */
+    .cert-authority-strip {
+      display: flex; align-items: center; gap: 14px;
+      background: #fff; border: 1px solid #DFE2E6; border-radius: 2px;
+      padding: 12px 18px; margin-bottom: 20px;
+    }
+    .cert-auth-sig-icon { color: #5189F3; flex-shrink: 0; }
+    .cert-auth-sig-icon svg { width: 18px; height: 18px; display: block; }
+    .cert-auth-name-display { font-size: 14px; font-weight: 800; color: #111; font-style: italic; }
+    .cert-auth-title-display { font-size: 11px; color: #888; margin-top: 1px; }
+    .cert-auth-note { font-size: 11px; color: #ccc; white-space: nowrap; }
+    .cert-auth-edit-btn {
+      background: none; border: 1px solid #DFE2E6; border-radius: 2px;
+      padding: 5px 12px; font-size: 12px; font-weight: 700; color: #666;
+      cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.12s;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .cert-auth-edit-btn:hover { border-color: #5189F3; color: #5189F3; }
+    .cert-auth-input {
+      height: 32px; padding: 0 10px; border: 1px solid #DFE2E6; border-radius: 2px;
+      font-family: 'Nunito', sans-serif; font-size: 13px; outline: none;
+      transition: border-color 0.15s; min-width: 0;
+    }
+    .cert-auth-input:focus { border-color: #5189F3; box-shadow: 0 0 0 2px rgba(81,137,243,0.1); }
+
+    /* ── Tier badge display ── */
+    .cert-tiers-row {
+      background: #fff; border: 1px solid #DFE2E6; border-radius: 2px;
+      padding: 36px 20px 28px; margin-bottom: 12px;
+      display: flex; align-items: flex-start; overflow-x: auto;
+    }
+    .cert-badge-col {
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      flex: 1; cursor: pointer; min-width: 130px;
+    }
+    .cert-badge-disk {
+      width: 88px; height: 88px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.2s, box-shadow 0.2s; flex-shrink: 0;
+    }
+    .cert-badge-col:hover:not(.cert-add-col) .cert-badge-disk { transform: scale(1.07); }
+    .cert-badge-col.badge-active .cert-badge-disk { transform: scale(1.13); }
+    .cert-badge-inner {
+      width: 62px; height: 62px; border-radius: 50%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .cert-badge-num { font-size: 20px; font-weight: 900; line-height: 1; text-shadow: 0 1px 2px rgba(0,0,0,0.15); }
+    .cert-badge-chk { margin-top: 2px; opacity: 0.85; }
+    .cert-badge-chk svg { width: 14px; height: 14px; display: block; }
+    .cert-badge-labels { text-align: center; }
+    .cert-badge-title { font-size: 12px; font-weight: 800; color: #111; line-height: 1.3; white-space: nowrap; }
+    .cert-badge-roletag {
+      display: inline-block; font-size: 10px; font-weight: 700;
+      padding: 2px 8px; border-radius: 2px; margin: 5px 0 3px; white-space: nowrap;
+    }
+    .cert-badge-holders { font-size: 11px; color: #bbb; }
+    .cert-badge-connector {
+      display: flex; align-items: flex-start; padding-top: 54px; flex-shrink: 0;
+      width: 28px; justify-content: center;
+    }
+    .cert-badge-connector svg { width: 16px; height: 16px; color: #E0E4EC; }
+    .cert-badge-svg-wrap {
+      flex-shrink: 0;
+      transition: transform 0.22s;
+    }
+    .cert-badge-col:hover:not(.cert-add-col) .cert-badge-svg-wrap { transform: scale(1.07); }
+    .cert-badge-col.badge-active .cert-badge-svg-wrap { transform: scale(1.12); }
+    /* Add tier badge */
+    .cert-add-disk {
+      width: 88px; height: 88px; border-radius: 50%;
+      border: 2px dashed #DFE2E6; background: #FAFBFF;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.15s, background 0.15s; color: #ccc;
+    }
+    .cert-add-disk svg { width: 26px; height: 26px; }
+    .cert-add-col:hover .cert-add-disk { border-color: #5189F3; background: #EEF3FF; color: #5189F3; }
+    .cert-add-col .cert-badge-title { color: #bbb; font-weight: 600; }
+    .cert-add-col:hover .cert-badge-title { color: #5189F3; }
+
+    /* ── Criteria expand panel ── */
+    .cert-criteria-panel {
+      background: #fff; border: 1px solid #DFE2E6; border-radius: 2px;
+      margin-bottom: 20px;
+      animation: certPanelIn 0.18s ease;
+    }
+    @keyframes certPanelIn { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:translateY(0); } }
+    .cert-cp-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 20px; border-bottom: 1px solid #F0F0F0;
+    }
+    .cert-cp-mini-badge {
+      width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800; color: #fff;
+    }
+    .cert-cp-title { font-size: 14px; font-weight: 800; color: #111; }
+    .cert-cp-sub { font-size: 12px; color: #888; margin-top: 2px; display: flex; align-items: center; gap: 8px; }
+    .cert-cp-actions { margin-left: auto; display: flex; gap: 8px; flex-shrink: 0; }
+    .cert-cp-body { padding: 16px 20px; display: flex; gap: 0; flex-wrap: wrap; }
+    .cert-cp-criterion {
+      flex: 1; min-width: 160px; padding-right: 20px; margin-right: 20px;
+      border-right: 1px solid #F0F0F0;
+    }
+    .cert-cp-criterion:last-child { border-right: none; padding-right: 0; margin-right: 0; }
+    .cert-cp-lbl { font-size: 10px; font-weight: 700; color: #ccc; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+    .cert-cp-val { font-size: 12px; color: #555; line-height: 1.5; }
+    .cert-cp-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+    .cert-cp-chip { font-size: 11px; background: #F5F5F5; color: #666; padding: 2px 8px; border-radius: 2px; border: 1px solid #EBEBEB; }
+    .cert-danger-btn {
+      padding: 6px 12px; font-size: 12px; background: none;
+      border: 1px solid #FECACA; border-radius: 2px;
+      color: #EF4444; cursor: pointer; font-family: 'Nunito', sans-serif;
+      font-weight: 700; display: flex; align-items: center; gap: 5px;
+      transition: all 0.12s;
+    }
+    .cert-danger-btn:hover { background: #FEF2F2; border-color: #EF4444; }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="brand">
+      <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+        <circle cx="17" cy="17" r="15.5" stroke="#111" stroke-width="1.3"/>
+        <path d="M10 22 C12 16 14.5 11 17 17 C19.5 23 22 18 24 12" stroke="#111" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+        <circle cx="17" cy="17" r="1.6" fill="#111"/>
+      </svg>
+      <span class="brand-text"><span class="sea">SEA</span>TRACE</span>
+    </div>
+    <div class="nav-right">
+      <span class="admin-badge">Admin</span>
+      <div class="nav-icons">
+        <button class="icon-btn" title="Switch to User View" onclick="window.location.href='knowledge-hub.html'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </button>
+        <button class="icon-btn" title="Exit">
+          <svg viewBox="0 0 18 18" fill="none">
+            <path d="M7 3H3a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M12 6l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M15 9H7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-label">Management</div>
+
+      <button class="nav-item active" onclick="switchTab('leaderboard', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10"/>
+          <line x1="12" y1="20" x2="12" y2="4"/>
+          <line x1="6"  y1="20" x2="6"  y2="14"/>
+        </svg>
+        Leaderboard
+      </button>
+
+      <button class="nav-item" onclick="switchTab('upload', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        Upload
+      </button>
+
+      <button class="nav-item" onclick="switchTab('quiz', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        Quiz
+      </button>
+
+      <button class="nav-item" onclick="switchTab('assessments', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 11l3 3L22 4"/>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+        </svg>
+        Assessments
+      </button>
+
+      <button class="nav-item" onclick="switchTab('certifications', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="6"/>
+          <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>
+        </svg>
+        Certifications
+      </button>
+
+      <div class="sidebar-bottom">
+        <button class="nav-item" onclick="window.location.href='knowledge-hub.html'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+          Knowledge Hub
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+
+      <!-- Leaderboard -->
+      <div id="section-leaderboard" class="section active">
+        <div class="page-header">
+          <h1>Leaderboard</h1>
+          <p>Track learner progress and rankings across all modules.</p>
+        </div>
+
+        <!-- Table card -->
+        <div class="table-card">
+
+          <!-- Toolbar -->
+          <div class="table-toolbar">
+            <div class="table-search-wrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input type="text" id="lbSearch" placeholder="Search users..." oninput="filterTable()" />
+            </div>
+            <span class="table-count" id="lbCount">10 users</span>
+          </div>
+
+          <!-- Table -->
+          <div class="table-wrap">
+            <table id="lbTable">
+              <thead>
+                <tr>
+                  <th style="width:52px">S.No</th>
+                  <th>User Name</th>
+                  <th>User Role</th>
+                  <th>User Progress</th>
+                  <th>Last Viewed</th>
+                </tr>
+              </thead>
+              <tbody id="lbBody"></tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Upload -->
+      <div id="section-upload" class="section">
+        <div class="page-header">
+          <h1>Upload</h1>
+          <p>Upload course content, videos, and resources to modules.</p>
+        </div>
+        <div class="placeholder-card">
+          <div class="placeholder-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <div class="placeholder-title">Upload coming soon</div>
+          <div class="placeholder-sub">Upload videos, PDFs, and materials directly to modules and classes.</div>
+        </div>
+      </div>
+
+      <!-- Quiz -->
+      <div id="section-quiz" class="section">
+
+        <div class="page-header-row">
+          <div class="page-header" style="margin-bottom:0">
+            <h1>Quiz</h1>
+            <p>Create mandatory quizzes tied to specific modules, classes, and topics.</p>
+          </div>
+          <button class="btn-primary" onclick="toggleQuizForm()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Create Quiz
+          </button>
+        </div>
+
+        <!-- Creator panel -->
+        <div id="quizCreator" class="quiz-creator" style="display:none">
+          <div class="quiz-creator-title">New Quiz</div>
+
+          <div class="qc-row">
+            <div class="qc-field">
+              <label>Module</label>
+              <select id="qModule" onchange="onModuleChange()">
+                <option value="">Select module…</option>
+                <option>Forms</option>
+                <option>Master Forms</option>
+                <option>Quality Control</option>
+              </select>
+            </div>
+            <div class="qc-field">
+              <label>Class</label>
+              <select id="qClass" onchange="onClassChange()" disabled>
+                <option value="">Select class…</option>
+              </select>
+            </div>
+            <div class="qc-field">
+              <label>Topic</label>
+              <select id="qTopic" onchange="onTopicChange()" disabled>
+                <option value="">Select topic…</option>
+              </select>
+              <input type="text" id="qTopicCustom" placeholder="Type custom topic…" style="display:none;margin-top:6px" />
+            </div>
+          </div>
+
+          <div class="qc-row">
+            <div class="qc-field" style="flex:2">
+              <label>Quiz Title</label>
+              <input type="text" id="qTitle" placeholder="Auto-filled from selection, or type your own…" />
+            </div>
+            <div class="qc-field qc-toggle-field">
+              <label>Mandatory</label>
+              <label class="toggle-switch" style="margin-top:6px">
+                <input type="checkbox" id="qMandatory" checked />
+                <span class="toggle-track"><span class="toggle-thumb"></span></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="qc-divider"></div>
+          <div class="qc-questions-header">
+            <span>Questions</span>
+            <button class="btn-add-question" onclick="addQuestion()">+ Add Question</button>
+          </div>
+          <div id="questionsList"></div>
+
+          <div class="qc-actions">
+            <button class="btn-ghost" onclick="cancelQuizForm()">Cancel</button>
+            <button class="btn-primary" onclick="saveQuiz()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              Save Quiz
+            </button>
+          </div>
+        </div>
+
+        <!-- Quiz list -->
+        <div class="table-card">
+          <div class="table-toolbar">
+            <div class="table-search-wrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input type="text" id="quizSearch" placeholder="Search quizzes…" oninput="filterQuizList()" />
+            </div>
+            <span class="table-count" id="quizCount">0 quizzes</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:52px">S.No</th>
+                  <th>Quiz Title</th>
+                  <th>Module</th>
+                  <th>Class</th>
+                  <th>Topic</th>
+                  <th style="width:80px">Questions</th>
+                  <th style="width:110px">Mandatory</th>
+                  <th style="width:80px">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="quizBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Assessments -->
+      <div id="section-assessments" class="section">
+        <div class="page-header">
+          <h1>Assessments</h1>
+          <p>Design and manage skill assessments for your learners.</p>
+        </div>
+        <div class="placeholder-card">
+          <div class="placeholder-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 11l3 3L22 4"/>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+            </svg>
+          </div>
+          <div class="placeholder-title">Assessments coming soon</div>
+          <div class="placeholder-sub">Build assessments, set criteria, and track learner results by module and category.</div>
+        </div>
+      </div>
+
+      <!-- Certifications -->
+      <div id="section-certifications" class="section">
+
+        <div class="page-header-row">
+          <div class="page-header" style="margin-bottom:0">
+            <h1>Certifications</h1>
+            <p>Role-based tiers awarded when module, quiz, and assessment criteria are met.</p>
+          </div>
+          <button class="btn-primary" onclick="toggleCertForm()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Add Certification
+          </button>
+        </div>
+
+        <!-- Signing Authority (appears on every certificate) -->
+        <div class="cert-authority-strip">
+          <div class="cert-auth-sig-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+            </svg>
+          </div>
+          <div id="certAuthDisplay" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+            <div>
+              <div class="cert-auth-name-display" id="certAuthNameEl">R. Krishnamurthy</div>
+              <div class="cert-auth-title-display" id="certAuthTitleEl">Director, SeaTrace Processing</div>
+            </div>
+            <span class="cert-auth-note">· Signs every issued certificate</span>
+          </div>
+          <div id="certAuthForm" style="display:none;align-items:center;gap:8px;flex:1;min-width:0">
+            <input class="cert-auth-input" id="certAuthNameInput" value="R. Krishnamurthy" placeholder="Authority name" style="flex:1" />
+            <input class="cert-auth-input" id="certAuthTitleInput" value="Director, SeaTrace Processing" placeholder="Title / Designation" style="flex:1.5" />
+            <button class="btn-primary" onclick="saveAuthoritySign()" style="padding:6px 14px;font-size:12px;white-space:nowrap">Save</button>
+            <button class="btn-ghost" onclick="cancelAuthorityEdit()" style="padding:6px 12px;font-size:12px">Cancel</button>
+          </div>
+          <button class="cert-auth-edit-btn" onclick="toggleAuthorityEdit()">✎ Edit Authority</button>
+        </div>
+
+        <!-- Add form (hidden by default) -->
+        <div id="certCreator" class="cert-creator" style="display:none">
+          <div class="cert-creator-title">New Certification</div>
+
+          <div class="qc-row">
+            <div class="qc-field" style="flex:2">
+              <label>Certificate Name</label>
+              <input type="text" id="cName" placeholder="e.g., Master Technician Certificate" />
+            </div>
+            <div class="qc-field">
+              <label>Short Name <span style="font-weight:400;color:#ccc">(for badges)</span></label>
+              <input type="text" id="cShortName" placeholder="e.g., Master Tech" />
+            </div>
+          </div>
+
+          <div class="qc-row">
+            <div class="qc-field">
+              <label>Role Eligible For</label>
+              <input type="text" id="cRole" placeholder="e.g., Supervisor, Incharge, Operator…" />
+            </div>
+            <div class="qc-field" style="flex:0;min-width:120px">
+              <label>Tier Level</label>
+              <input type="number" id="cTier" min="1" max="99" placeholder="e.g., 6" style="height:36px;padding:0 12px;border:1px solid #DFE2E6;border-radius:2px;font-family:'Nunito',sans-serif;font-size:13px;width:100%;outline:none" />
+            </div>
+          </div>
+
+          <div class="qc-row">
+            <div class="qc-field">
+              <label>Description</label>
+              <input type="text" id="cDesc" placeholder="Brief description of this certification level…" />
+            </div>
+          </div>
+
+          <div class="qc-row">
+            <div class="qc-field">
+              <label>Tier Colour</label>
+              <div class="cert-color-row" id="certColorSwatches"></div>
+            </div>
+          </div>
+
+          <div class="qc-row">
+            <div class="qc-field">
+              <label>Modules Required <span style="font-weight:400;color:#ccc">— type name, press Enter to add</span></label>
+              <div class="cert-tag-wrap" id="modulesTagWrap" onclick="document.getElementById('moduleTagInput').focus()">
+                <input class="cert-tag-input" id="moduleTagInput" type="text"
+                  placeholder="Type module name and press Enter…"
+                  onkeydown="handleModuleTag(event)" />
+              </div>
+            </div>
+          </div>
+
+          <div class="qc-row">
+            <div class="qc-field">
+              <label>Quizzes Required</label>
+              <input type="text" id="cQuizzes" placeholder="e.g., All Forms quizzes (8 quizzes)" />
+            </div>
+            <div class="qc-field">
+              <label>Assessment</label>
+              <input type="text" id="cAssessment" placeholder="e.g., Processor Skills Assessment" />
+            </div>
+          </div>
+
+          <div class="qc-actions">
+            <button class="btn-ghost" onclick="cancelCertForm()">Cancel</button>
+            <button class="btn-primary" onclick="saveCert()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Save Certification
+            </button>
+          </div>
+        </div>
+
+        <!-- Tier Badge Display (primary view) -->
+        <div class="cert-tiers-row" id="certTiersRow"></div>
+
+        <!-- Criteria panel — expands when a badge is clicked -->
+        <div id="certCriteriaPanel" class="cert-criteria-panel" style="display:none"></div>
+
+        <!-- Issued certificates -->
+        <div class="cert-section-label"><span>Issued Certificates</span></div>
+        <div class="cert-filter-bar" id="certFilterBar"></div>
+
+        <div class="table-card">
+          <div class="table-toolbar">
+            <div class="table-search-wrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input type="text" id="certSearch" placeholder="Search by name or certificate…" oninput="searchCertHolders()" />
+            </div>
+            <span class="table-count" id="certHolderCount">0 certificates</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:52px">S.No</th>
+                  <th>User Name</th>
+                  <th>Certificate Earned</th>
+                  <th>Role Eligible</th>
+                  <th>Date Earned</th>
+                  <th style="width:90px">Status</th>
+                  <th style="width:56px">View</th>
+                </tr>
+              </thead>
+              <tbody id="certBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    function switchTab(id, btn) {
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('section-' + id).classList.add('active');
+    }
+
+    /* ── Leaderboard data ── */
+    const LEVELS = ['L1', 'L2', 'L3', 'L4', 'L5'];
+    const AVATAR_COLORS = ['#5189F3','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#0EA5E9','#14B8A6','#F97316','#6366F1'];
+
+    const USERS = [
+      { name: 'Arjun Mehta',     email: 'arjun@seatrace.in',   role: 'supervisor', levelsCompleted: 5, lastViewed: '18 Jun 2026', lastTime: '09:42 AM' },
+      { name: 'Priya Nair',      email: 'priya@seatrace.in',   role: 'qc',         levelsCompleted: 4, lastViewed: '17 Jun 2026', lastTime: '03:15 PM' },
+      { name: 'Ravi Kumar',      email: 'ravi@seatrace.in',    role: 'operator',   levelsCompleted: 4, lastViewed: '17 Jun 2026', lastTime: '11:30 AM' },
+      { name: 'Sneha Thomas',    email: 'sneha@seatrace.in',   role: 'trainee',    levelsCompleted: 3, lastViewed: '16 Jun 2026', lastTime: '02:00 PM' },
+      { name: 'Kiran Babu',      email: 'kiran@seatrace.in',   role: 'operator',   levelsCompleted: 3, lastViewed: '15 Jun 2026', lastTime: '10:05 AM' },
+      { name: 'Divya Krishnan',  email: 'divya@seatrace.in',   role: 'qc',         levelsCompleted: 2, lastViewed: '14 Jun 2026', lastTime: '04:45 PM' },
+      { name: 'Suresh Patel',    email: 'suresh@seatrace.in',  role: 'supervisor', levelsCompleted: 5, lastViewed: '13 Jun 2026', lastTime: '08:20 AM' },
+      { name: 'Anitha Raj',      email: 'anitha@seatrace.in',  role: 'trainee',    levelsCompleted: 1, lastViewed: '12 Jun 2026', lastTime: '01:10 PM' },
+      { name: 'Mohan Das',       email: 'mohan@seatrace.in',   role: 'operator',   levelsCompleted: 2, lastViewed: '11 Jun 2026', lastTime: '05:30 PM' },
+      { name: 'Lakshmi Iyer',    email: 'lakshmi@seatrace.in', role: 'trainee',    levelsCompleted: 0, lastViewed: '10 Jun 2026', lastTime: '09:00 AM' },
+    ];
+
+    const ROLE_LABELS = { supervisor: 'Supervisor', operator: 'Operator', qc: 'QC Inspector', trainee: 'Trainee' };
+    const ROLE_CLASS  = { supervisor: 'role-supervisor', operator: 'role-operator', qc: 'role-qc', trainee: 'role-trainee' };
+
+    function initials(name) {
+      return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById('lbBody');
+      if (data.length === 0) {
+        tbody.innerHTML = `<tr class="empty-row"><td colspan="5">No users found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = data.map((u, i) => {
+        const pct = Math.round((u.levelsCompleted / LEVELS.length) * 100);
+
+        const dots = LEVELS.map((l, li) => {
+          const cls = li < u.levelsCompleted ? 'level-dot done'
+                    : li === u.levelsCompleted && u.levelsCompleted < LEVELS.length ? 'level-dot current'
+                    : 'level-dot';
+          return `<div class="${cls}">${l}</div>`;
+        }).join('');
+
+        return `
+          <tr>
+            <td><span class="sno">${String(i + 1).padStart(2, '0')}</span></td>
+            <td>
+              <div class="user-cell">
+                <div class="avatar" style="background:${AVATAR_COLORS[i % AVATAR_COLORS.length]}">${initials(u.name)}</div>
+                <div>
+                  <div class="user-name">${u.name}</div>
+                  <div class="user-email">${u.email}</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="role-badge ${ROLE_CLASS[u.role]}">${ROLE_LABELS[u.role]}</span></td>
+            <td>
+              <div class="progress-cell">
+                <div class="level-dots">${dots}</div>
+                <div class="progress-bar-wrap">
+                  <div class="progress-bar-fill" style="width:${pct}%"></div>
+                </div>
+                <div class="progress-text">${u.levelsCompleted} of ${LEVELS.length} levels · ${pct}%</div>
+              </div>
+            </td>
+            <td>
+              <div class="date-cell">
+                ${u.lastViewed}<br/>
+                <span class="time">${u.lastTime}</span>
+              </div>
+            </td>
+          </tr>`;
+      }).join('');
+
+      document.getElementById('lbCount').textContent = data.length + ' user' + (data.length !== 1 ? 's' : '');
+    }
+
+    function filterTable() {
+      const q = document.getElementById('lbSearch').value.toLowerCase();
+      renderTable(USERS.filter(u =>
+        u.name.toLowerCase().includes(q) ||
+        u.role.toLowerCase().includes(q) ||
+        ROLE_LABELS[u.role].toLowerCase().includes(q)
+      ));
+    }
+
+    renderTable(USERS);
+
+    /* ══════════════════════════════════════
+       QUIZ BUILDER
+    ══════════════════════════════════════ */
+    const MODULE_DATA = {
+      'Forms': {
+        classes: ['Beheading','Grading','Peeling & Cutting','De-veining','Weighing & Packing','IQF Freezing','Cold Store Inward','Cold Store Outward'],
+        topics: {
+          'Beheading':          ['Equipment Safety','Hygiene Standards','Process Flow','Quality Checks','Waste Management'],
+          'Grading':            ['Size Classification','Quality Grading','Reject Criteria','Weight Standards'],
+          'Peeling & Cutting':  ['Knife Handling','Peeling Techniques','Cut Standards','Safety Protocols'],
+          'De-veining':         ['Vein Removal Process','Quality Inspection','Hygiene Practices','Tool Handling'],
+          'Weighing & Packing': ['Weight Calibration','Packing Standards','Labelling Requirements','Batch Tracking'],
+          'IQF Freezing':       ['Temperature Control','Freezing Cycles','Equipment Maintenance','Cold Chain Basics'],
+          'Cold Store Inward':  ['Receiving Procedures','Temperature Logging','Storage Layout','Documentation'],
+          'Cold Store Outward': ['Dispatch Protocols','Cold Chain Maintenance','Shipping Documentation','Vehicle Inspection'],
+        }
+      },
+      'Master Forms': {
+        classes: ['Supplier Registration','Raw Material Intake','Batch Traceability','Equipment Log','Staff Records'],
+        topics: {
+          'Supplier Registration': ['KYC Documentation','Audit Requirements','Approval Workflow'],
+          'Raw Material Intake':   ['Receiving Standards','Freshness Checks','Temperature Logs'],
+          'Batch Traceability':    ['Batch ID Generation','Chain of Custody','Recall Procedures'],
+          'Equipment Log':         ['Maintenance Schedule','Calibration Records','Downtime Tracking'],
+          'Staff Records':         ['Onboarding Checklist','Training Log','Medical Clearance'],
+        }
+      },
+      'Quality Control': {
+        classes: ['Organoleptic Test','Microbiological Check','Chemical Analysis','Packaging Inspection','Final Release'],
+        topics: {
+          'Organoleptic Test':     ['Colour Standards','Odour Assessment','Texture Grading','Visual Defects'],
+          'Microbiological Check': ['Sampling Procedure','Lab Submission','Acceptable Limits'],
+          'Chemical Analysis':     ['Sulphite Testing','Antibiotic Screening','Heavy Metals'],
+          'Packaging Inspection':  ['Label Compliance','Seal Integrity','Weight Verification'],
+          'Final Release':         ['Release Criteria','Hold Procedures','Dispatch Clearance'],
+        }
+      }
+    };
+
+    let qCards   = [];
+    let quizzes  = [];
+    let qCardId  = 0;
+
+    function toggleQuizForm() {
+      const el = document.getElementById('quizCreator');
+      if (el.style.display === 'none' || !el.style.display) {
+        el.style.display = 'block';
+        resetQuizForm();
+      } else {
+        el.style.display = 'none';
+      }
+    }
+
+    function cancelQuizForm() {
+      document.getElementById('quizCreator').style.display = 'none';
+      resetQuizForm();
+    }
+
+    function resetQuizForm() {
+      document.getElementById('qModule').value = '';
+      const qClass = document.getElementById('qClass');
+      qClass.innerHTML = '<option value="">Select class…</option>';
+      qClass.disabled = true;
+      const qTopic = document.getElementById('qTopic');
+      qTopic.innerHTML = '<option value="">Select topic…</option>';
+      qTopic.disabled = true;
+      document.getElementById('qTopicCustom').style.display = 'none';
+      document.getElementById('qTopicCustom').value = '';
+      document.getElementById('qTitle').value = '';
+      document.getElementById('qMandatory').checked = true;
+      qCards = [];
+      renderQuestions();
+    }
+
+    function onModuleChange() {
+      const mod = document.getElementById('qModule').value;
+      const qClass = document.getElementById('qClass');
+      const qTopic = document.getElementById('qTopic');
+      qClass.innerHTML = '<option value="">Select class…</option>';
+      qTopic.innerHTML = '<option value="">Select topic…</option>';
+      qTopic.disabled = true;
+      document.getElementById('qTopicCustom').style.display = 'none';
+      if (mod && MODULE_DATA[mod]) {
+        MODULE_DATA[mod].classes.forEach(c => {
+          qClass.innerHTML += `<option value="${c}">${c}</option>`;
+        });
+        qClass.disabled = false;
+      } else {
+        qClass.disabled = true;
+      }
+      updateAutoTitle();
+    }
+
+    function onClassChange() {
+      const mod = document.getElementById('qModule').value;
+      const cls = document.getElementById('qClass').value;
+      const qTopic = document.getElementById('qTopic');
+      qTopic.innerHTML = '<option value="">Select topic…</option>';
+      document.getElementById('qTopicCustom').style.display = 'none';
+      if (cls && MODULE_DATA[mod] && MODULE_DATA[mod].topics[cls]) {
+        MODULE_DATA[mod].topics[cls].forEach(t => {
+          qTopic.innerHTML += `<option value="${t}">${t}</option>`;
+        });
+        qTopic.innerHTML += '<option value="__custom__">+ Custom topic…</option>';
+        qTopic.disabled = false;
+      } else {
+        qTopic.disabled = true;
+      }
+      updateAutoTitle();
+    }
+
+    function onTopicChange() {
+      const val = document.getElementById('qTopic').value;
+      document.getElementById('qTopicCustom').style.display = val === '__custom__' ? 'block' : 'none';
+      if (val !== '__custom__') updateAutoTitle();
+    }
+
+    function updateAutoTitle() {
+      const mod   = document.getElementById('qModule').value;
+      const cls   = document.getElementById('qClass').value;
+      const topic = document.getElementById('qTopic').value;
+      if (mod && cls && topic && topic !== '__custom__') {
+        document.getElementById('qTitle').value = `${mod} – ${cls} – ${topic}`;
+      }
+    }
+
+    function addQuestion() {
+      const id = qCardId++;
+      qCards.push({ id, type: 'mcq' });
+      renderQuestions();
+      const card = document.getElementById('qcard-' + id);
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function removeQuestion(id) {
+      qCards = qCards.filter(q => q.id !== id);
+      renderQuestions();
+    }
+
+    function setQType(id, type, btn) {
+      const card = qCards.find(q => q.id === id);
+      if (card) card.type = type;
+      btn.closest('.q-type-tabs').querySelectorAll('.q-type-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('qopts-'  + id).style.display = type === 'mcq'   ? 'block' : 'none';
+      document.getElementById('qtf-'    + id).style.display = type === 'tf'    ? 'flex'  : 'none';
+      document.getElementById('qshort-' + id).style.display = type === 'short' ? 'block' : 'none';
+    }
+
+    function renderQuestions() {
+      const container = document.getElementById('questionsList');
+      if (qCards.length === 0) {
+        container.innerHTML = '<div class="no-questions-hint">No questions yet. Click "+ Add Question" to get started.</div>';
+        return;
+      }
+      container.innerHTML = qCards.map((q, i) => `
+        <div class="q-card" id="qcard-${q.id}">
+          <div class="q-card-header">
+            <span class="q-num">Q${i + 1}</span>
+            <div class="q-type-tabs">
+              <button class="q-type-tab ${q.type==='mcq'   ? 'active':''}" onclick="setQType(${q.id},'mcq',this)">MCQ</button>
+              <button class="q-type-tab ${q.type==='tf'    ? 'active':''}" onclick="setQType(${q.id},'tf',this)">True / False</button>
+              <button class="q-type-tab ${q.type==='short' ? 'active':''}" onclick="setQType(${q.id},'short',this)">Short Answer</button>
+            </div>
+            <button class="q-remove-btn" onclick="removeQuestion(${q.id})" title="Remove">✕</button>
+          </div>
+          <textarea class="q-text" id="qtext-${q.id}" placeholder="Type your question here…"></textarea>
+          <div id="qopts-${q.id}" style="display:${q.type==='mcq'?'block':'none'}">
+            ${['A','B','C','D'].map((l,li) => `
+              <div class="q-option-row">
+                <input type="radio" name="correct-${q.id}" value="${li}" />
+                <input type="text" class="q-opt-input" id="qopt-${q.id}-${li}" placeholder="Option ${l}" />
+              </div>`).join('')}
+            <div class="q-option-hint">Select the radio button next to the correct answer.</div>
+          </div>
+          <div class="q-tf" id="qtf-${q.id}" style="display:${q.type==='tf'?'flex':'none'}">
+            <label><input type="radio" name="tf-${q.id}" value="true" /> True</label>
+            <label><input type="radio" name="tf-${q.id}" value="false" /> False</label>
+          </div>
+          <div id="qshort-${q.id}" style="display:${q.type==='short'?'block':'none'}">
+            <div class="q-short-note">User will type a free-form answer. No predefined options needed.</div>
+          </div>
+        </div>`).join('');
+    }
+
+    function saveQuiz() {
+      const mod      = document.getElementById('qModule').value;
+      const cls      = document.getElementById('qClass').value;
+      const topicRaw = document.getElementById('qTopic').value;
+      const topic    = topicRaw === '__custom__'
+        ? document.getElementById('qTopicCustom').value.trim()
+        : topicRaw;
+      const title    = document.getElementById('qTitle').value.trim();
+      const mandatory = document.getElementById('qMandatory').checked;
+
+      if (!mod || !cls || !topic) { alert('Please select Module, Class, and Topic.'); return; }
+      if (!title)                  { alert('Please enter a quiz title.'); return; }
+      if (qCards.length === 0)     { alert('Please add at least one question.'); return; }
+
+      const questions = qCards.map(q => {
+        const text = (document.getElementById('qtext-' + q.id)?.value || '').trim();
+        if (!text) return null;
+        const obj = { type: q.type, text };
+        if (q.type === 'mcq') {
+          obj.options = [0,1,2,3].map(li => (document.getElementById(`qopt-${q.id}-${li}`)?.value || '').trim());
+          const r = document.querySelector(`input[name="correct-${q.id}"]:checked`);
+          obj.correct = r ? parseInt(r.value) : null;
+        } else if (q.type === 'tf') {
+          const r = document.querySelector(`input[name="tf-${q.id}"]:checked`);
+          obj.correct = r ? r.value : null;
+        }
+        return obj;
+      }).filter(Boolean);
+
+      if (questions.length === 0) { alert('Please fill in at least one question.'); return; }
+
+      const d = new Date();
+      const dateStr = d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+      quizzes.unshift({ id: Date.now(), title, module: mod, cls, topic, mandatory, questions, created: dateStr });
+      renderQuizList();
+      cancelQuizForm();
+    }
+
+    function deleteQuiz(id) {
+      if (!confirm('Delete this quiz?')) return;
+      quizzes = quizzes.filter(q => q.id !== id);
+      renderQuizList();
+    }
+
+    function toggleQuizExpand(id) {
+      const row = document.getElementById('qexpand-' + id);
+      const btn = document.getElementById('qexpandbtn-' + id);
+      row.classList.toggle('open');
+      btn.style.transform = row.classList.contains('open') ? 'rotate(180deg)' : '';
+    }
+
+    function renderQuizList(data) {
+      const list = data || quizzes;
+      const tbody = document.getElementById('quizBody');
+      document.getElementById('quizCount').textContent =
+        list.length + ' quiz' + (list.length !== 1 ? 'zes' : '');
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr class="empty-row"><td colspan="8">No quizzes yet. Click "Create Quiz" to add one.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map((q, i) => `
+        <tr>
+          <td><span class="sno">${String(i+1).padStart(2,'0')}</span></td>
+          <td style="font-weight:600;color:#111;">${q.title}</td>
+          <td><span class="quiz-module-tag">${q.module}</span></td>
+          <td style="color:#555;font-size:13px;">${q.cls}</td>
+          <td style="color:#888;font-size:13px;">${q.topic}</td>
+          <td style="color:#5189F3;font-weight:700;text-align:center;">${q.questions.length}</td>
+          <td>
+            <span class="mandatory-badge ${q.mandatory ? 'mandatory-yes' : 'mandatory-no'}">
+              ${q.mandatory ? '✓ Mandatory' : 'Optional'}
+            </span>
+          </td>
+          <td style="white-space:nowrap">
+            <button class="action-btn expand" id="qexpandbtn-${q.id}" onclick="toggleQuizExpand(${q.id})" title="View questions" style="transition:transform 0.2s">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <button class="action-btn" onclick="deleteQuiz(${q.id})" title="Delete quiz">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                <path d="M10 11v6"/><path d="M14 11v6"/>
+                <path d="M9 6V4h6v2"/>
+              </svg>
+            </button>
+          </td>
+        </tr>
+        <tr class="q-expand-row" id="qexpand-${q.id}">
+          <td colspan="8">
+            <div class="q-expand-inner">
+              ${q.questions.map((qu, qi) => `
+                <div class="q-expand-item">
+                  <div>
+                    <span class="q-expand-qnum">Q${qi+1}</span>
+                    <span class="q-expand-type">${qu.type==='mcq'?'MCQ':qu.type==='tf'?'True/False':'Short Answer'}</span>
+                  </div>
+                  <div style="margin-top:4px;color:#333;">${qu.text}</div>
+                  ${qu.type==='mcq' && qu.options ? `
+                    <div class="q-expand-opts">
+                      ${qu.options.map((o, oi) => `
+                        <div class="q-expand-opt ${oi===qu.correct?'correct':''}">
+                          <span class="${oi===qu.correct?'dot-correct':'dot-grey'}"></span>
+                          ${['A','B','C','D'][oi]}) ${o||'—'}
+                        </div>`).join('')}
+                    </div>` : ''}
+                  ${qu.type==='tf' ? `
+                    <div style="font-size:12px;color:#555;margin-top:6px;">
+                      Correct: <strong>${qu.correct==='true'?'True':qu.correct==='false'?'False':'—'}</strong>
+                    </div>` : ''}
+                </div>`).join('')}
+            </div>
+          </td>
+        </tr>`).join('');
+    }
+
+    function filterQuizList() {
+      const q = document.getElementById('quizSearch').value.toLowerCase();
+      renderQuizList(quizzes.filter(qz =>
+        qz.title.toLowerCase().includes(q) ||
+        qz.module.toLowerCase().includes(q) ||
+        qz.cls.toLowerCase().includes(q) ||
+        qz.topic.toLowerCase().includes(q)
+      ));
+    }
+
+    renderQuizList();
+    renderQuestions();
+
+    /* ══════════════════════════════════════
+       CERTIFICATIONS
+    ══════════════════════════════════════ */
+    const CERT_COLORS = [
+      { name:'Gold',   color:'#D97706', bg:'#FEF3C7', border:'#F59E0B' },
+      { name:'Purple', color:'#7C3AED', bg:'#F5F3FF', border:'#8B5CF6' },
+      { name:'Blue',   color:'#2563EB', bg:'#EEF3FF', border:'#5189F3' },
+      { name:'Green',  color:'#059669', bg:'#ECFDF5', border:'#10B981' },
+      { name:'Slate',  color:'#475569', bg:'#F1F5F9', border:'#94A3B8' },
+      { name:'Red',    color:'#DC2626', bg:'#FEF2F2', border:'#EF4444' },
+      { name:'Orange', color:'#EA580C', bg:'#FFF7ED', border:'#F97316' },
+      { name:'Teal',   color:'#0D9488', bg:'#F0FDFA', border:'#14B8A6' },
+    ];
+    let selectedCertColorIdx = 0;
+
+    const ROLE_STYLE = {
+      'supervisor':      { color:'#2563EB', bg:'#EEF3FF', border:'#c7d7fd' },
+      'incharge':        { color:'#7C3AED', bg:'#F5F3FF', border:'#DDD6FE' },
+      'senior operator': { color:'#0369A1', bg:'#E0F2FE', border:'#7DD3FC' },
+      'operator':        { color:'#16a34a', bg:'#F0FDF4', border:'#bbf7d0' },
+      'trainee':         { color:'#64748B', bg:'#F8FAFC', border:'#CBD5E1' },
+    };
+    function getRoleStyle(role) {
+      return ROLE_STYLE[role.toLowerCase()] || { color:'#555', bg:'#F5F5F5', border:'#E0E0E0' };
+    }
+
+    let certList = [
+      {
+        id:'cert-5', tier:5, shortName:'Production Manager',
+        name:'Master Technician Certificate',
+        sub:'Full mastery across processing, documentation, and quality control',
+        roleEligible:'Production Manager',
+        tierColor:'#D97706', tierBg:'#FEF3C7', borderColor:'#F59E0B',
+        modules:['All Forms (8 modules)','All Master Forms (5 modules)','All Quality Control (5 modules)'],
+        quizzes:'All 18 module quizzes completed',
+        assessment:'Final Supervisor Assessment', holders:2,
+      },
+      {
+        id:'cert-4', tier:4, shortName:'QC Manager',
+        name:'Senior Processor Certificate',
+        sub:'Advanced processing with master documentation and QC fundamentals',
+        roleEligible:'QC Manager',
+        tierColor:'#7C3AED', tierBg:'#F5F3FF', borderColor:'#8B5CF6',
+        modules:['All Forms (8 modules)','Master Forms: 3 of 5','QC: Organoleptic + Packaging'],
+        quizzes:'Forms + Master Forms quizzes (13 quizzes)',
+        assessment:'Senior Processor Assessment', holders:2,
+      },
+      {
+        id:'cert-3', tier:3, shortName:'Supervisor',
+        name:'Certified Processor Certificate',
+        sub:'Complete processing workflow with supplier and intake documentation',
+        roleEligible:'Supervisor',
+        tierColor:'#2563EB', tierBg:'#EEF3FF', borderColor:'#5189F3',
+        modules:['All Forms (8 modules)','Master Forms: Supplier Reg + Raw Material Intake'],
+        quizzes:'All Forms quizzes (8 quizzes)',
+        assessment:'Processor Skills Assessment', holders:2,
+      },
+      {
+        id:'cert-2', tier:2, shortName:'Incharge',
+        name:'Process Associate Certificate',
+        sub:'Core processing stages from intake through packing',
+        roleEligible:'Incharge',
+        tierColor:'#059669', tierBg:'#ECFDF5', borderColor:'#10B981',
+        modules:['Forms: Beheading, Grading, Peeling & Cutting, De-veining, Weighing & Packing'],
+        quizzes:'Core Forms quizzes (5 quizzes)',
+        assessment:'Process Associate Assessment', holders:2,
+      },
+      {
+        id:'cert-1', tier:1, shortName:'Trainee',
+        name:'Foundation Certificate',
+        sub:'Entry-level understanding of basic shrimp processing procedures',
+        roleEligible:'Trainee',
+        tierColor:'#475569', tierBg:'#F1F5F9', borderColor:'#94A3B8',
+        modules:['Forms: Beheading, Grading, Peeling & Cutting'],
+        quizzes:'Foundation quizzes (3 quizzes)',
+        assessment:'Foundation Knowledge Check', holders:1,
+      },
+    ];
+
+    const CERT_HOLDERS = [
+      { name:'Arjun Mehta',    email:'arjun@seatrace.in',   certId:'cert-5', date:'15 Mar 2026', status:'active' },
+      { name:'Suresh Patel',   email:'suresh@seatrace.in',  certId:'cert-5', date:'02 Apr 2026', status:'active' },
+      { name:'Priya Nair',     email:'priya@seatrace.in',   certId:'cert-4', date:'10 Apr 2026', status:'active' },
+      { name:'Ravi Kumar',     email:'ravi@seatrace.in',    certId:'cert-4', date:'20 Apr 2026', status:'active' },
+      { name:'Sneha Thomas',   email:'sneha@seatrace.in',   certId:'cert-3', date:'05 May 2026', status:'active' },
+      { name:'Kiran Babu',     email:'kiran@seatrace.in',   certId:'cert-3', date:'18 May 2026', status:'active' },
+      { name:'Divya Krishnan', email:'divya@seatrace.in',   certId:'cert-2', date:'28 May 2026', status:'active' },
+      { name:'Mohan Das',      email:'mohan@seatrace.in',   certId:'cert-2', date:'03 Jun 2026', status:'active' },
+      { name:'Anitha Raj',     email:'anitha@seatrace.in',  certId:'cert-1', date:'10 Jun 2026', status:'active' },
+    ];
+
+    let activeCertFilter = 'all';
+    let certModuleTags  = [];
+
+    /* ── Signing authority ── */
+    let certAuthority = { name: 'R. Krishnamurthy', title: 'Director, SeaTrace Processing' };
+
+    function toggleAuthorityEdit() {
+      const disp = document.getElementById('certAuthDisplay');
+      const form = document.getElementById('certAuthForm');
+      const isEditing = form.style.display === 'flex';
+      disp.style.display = isEditing ? 'flex' : 'none';
+      form.style.display = isEditing ? 'none' : 'flex';
+      if (!isEditing) {
+        document.getElementById('certAuthNameInput').value  = certAuthority.name;
+        document.getElementById('certAuthTitleInput').value = certAuthority.title;
+      }
+    }
+    function saveAuthoritySign() {
+      const n = document.getElementById('certAuthNameInput').value.trim();
+      const t = document.getElementById('certAuthTitleInput').value.trim();
+      if (!n) { alert('Please enter the authority name.'); return; }
+      certAuthority = { name: n, title: t };
+      document.getElementById('certAuthNameEl').textContent  = n;
+      document.getElementById('certAuthTitleEl').textContent = t;
+      document.getElementById('certAuthForm').style.display    = 'none';
+      document.getElementById('certAuthDisplay').style.display = 'flex';
+    }
+    function cancelAuthorityEdit() {
+      document.getElementById('certAuthForm').style.display    = 'none';
+      document.getElementById('certAuthDisplay').style.display = 'flex';
+    }
+
+    /* ── Tier badge gradients ── */
+    const TIER_BADGE_GRAD = {
+      5: { grad: 'radial-gradient(circle at 38% 32%, #FFF3B0, #F59E0B 48%, #78350F)', ring: '#F59E0B' },
+      4: { grad: 'radial-gradient(circle at 38% 32%, #EDE9FE, #8B5CF6 48%, #4C1D95)', ring: '#8B5CF6' },
+      3: { grad: 'radial-gradient(circle at 38% 32%, #BFDBFE, #5189F3 48%, #1E3A8A)', ring: '#5189F3' },
+      2: { grad: 'radial-gradient(circle at 38% 32%, #A7F3D0, #10B981 48%, #064E3B)', ring: '#10B981' },
+      1: { grad: 'radial-gradient(circle at 38% 32%, #E2E8F0, #64748B 48%, #1E293B)', ring: '#64748B' },
+    };
+
+    let activeCertBadgeId = null;
+
+    /* ── Badge renderer — PNG assets for all 5 levels ── */
+    function makeBadgeSvg(cert) {
+      const ASSETS = {
+        1: 'Assets/Level 1 - badge.png',
+        2: 'Assets/Level 2 - badge.png',
+        3: 'Assets/Level 3 - badge.png',
+        4: 'Assets/Level 4 - badge.png',
+        5: 'Assets/Level 5 - badge.png',
+      };
+      const src = ASSETS[cert.tier];
+      if (!src) return `<div style="width:120px;height:120px;border-radius:50%;background:#E5E7EB;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:#6B7280">T${cert.tier}</div>`;
+      return `<img src="${src}" width="120" height="120" style="display:block;object-fit:contain" draggable="false" alt="Level ${cert.tier} Badge"/>`;
+    }
+
+    /* ── Render tier badge row ── */
+    function renderCertBadges() {
+      const container = document.getElementById('certTiersRow');
+      const sorted    = [...certList].sort((a, b) => a.tier - b.tier);
+      const chevronSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+
+      let html = '';
+      sorted.forEach((c, i) => {
+        const rs       = getRoleStyle(c.roleEligible);
+        const isActive = activeCertBadgeId === c.id;
+        if (i > 0) html += `<div class="cert-badge-connector">${chevronSvg}</div>`;
+        html += `
+          <div class="cert-badge-col ${isActive ? 'badge-active' : ''}" onclick="selectCertBadge('${c.id}')">
+            <div class="cert-badge-svg-wrap">${makeBadgeSvg(c)}</div>
+            <div class="cert-badge-labels">
+              <div class="cert-badge-title">${c.shortName || c.name.split(' ').slice(0,2).join(' ')}</div>
+              <div class="cert-badge-roletag" style="background:${rs.bg};color:${rs.color};border:1px solid ${rs.border}">→ ${c.roleEligible}</div>
+              <div class="cert-badge-holders">${c.holders || 0} holder${(c.holders || 0) !== 1 ? 's' : ''}</div>
+            </div>
+          </div>`;
+      });
+
+      html += `<div class="cert-badge-connector">${chevronSvg}</div>
+        <div class="cert-badge-col cert-add-col" onclick="toggleCertForm()" title="Add new certification tier">
+          <div class="cert-add-disk">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </div>
+          <div class="cert-badge-labels">
+            <div class="cert-badge-title cert-add-col">Add Tier</div>
+          </div>
+        </div>`;
+
+      container.innerHTML = html;
+    }
+
+    function selectCertBadge(certId) {
+      activeCertBadgeId = activeCertBadgeId === certId ? null : certId;
+      renderCertBadges();
+      const panel = document.getElementById('certCriteriaPanel');
+      if (activeCertBadgeId) {
+        renderCriteriaPanel(activeCertBadgeId);
+        panel.style.display = 'block';
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } else {
+        panel.style.display = 'none';
+      }
+    }
+
+    function renderCriteriaPanel(certId) {
+      const cert = certList.find(c => c.id === certId);
+      if (!cert) return;
+      const rs   = getRoleStyle(cert.roleEligible);
+      const mods = Array.isArray(cert.modules) ? cert.modules : [cert.modules];
+      document.getElementById('certCriteriaPanel').innerHTML = `
+        <div class="cert-cp-header">
+          <div class="cert-cp-mini-badge" style="background:${cert.tierColor}">T${cert.tier}</div>
+          <div>
+            <div class="cert-cp-title">${cert.name}</div>
+            <div class="cert-cp-sub">
+              <span class="cert-role-sm" style="background:${rs.bg};color:${rs.color};border:1px solid ${rs.border}">→ ${cert.roleEligible}</span>
+              <span>${cert.holders || 0} holder${(cert.holders || 0) !== 1 ? 's' : ''}</span>
+              ${cert.sub ? `<span style="color:#ccc">·</span><span style="color:#aaa">${cert.sub}</span>` : ''}
+            </div>
+          </div>
+          <div class="cert-cp-actions">
+            <button class="btn-ghost" onclick="openCertPreview('${cert.id}',null,null,null)"
+              style="padding:6px 14px;font-size:12px;display:flex;align-items:center;gap:6px">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              Preview Certificate
+            </button>
+            <button class="cert-danger-btn" onclick="removeCert('${cert.id}')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+              Remove
+            </button>
+          </div>
+        </div>
+        <div class="cert-cp-body">
+          <div class="cert-cp-criterion">
+            <div class="cert-cp-lbl">Modules Required</div>
+            <div class="cert-cp-chips">
+              ${mods.map(m => `<span class="cert-cp-chip">${m}</span>`).join('')}
+            </div>
+          </div>
+          <div class="cert-cp-criterion">
+            <div class="cert-cp-lbl">Mandatory Quizzes</div>
+            <div class="cert-cp-val">${cert.quizzes}</div>
+          </div>
+          <div class="cert-cp-criterion">
+            <div class="cert-cp-lbl">Assessment</div>
+            <div class="cert-cp-val">${cert.assessment}</div>
+          </div>
+        </div>`;
+    }
+
+    /* ── Add form ── */
+    function toggleCertForm() {
+      const el = document.getElementById('certCreator');
+      if (el.style.display === 'none' || !el.style.display) {
+        el.style.display = 'block';
+        resetCertForm();
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } else {
+        el.style.display = 'none';
+      }
+    }
+
+    function cancelCertForm() {
+      document.getElementById('certCreator').style.display = 'none';
+      resetCertForm();
+    }
+
+    function resetCertForm() {
+      ['cName','cShortName','cRole','cDesc','cQuizzes','cAssessment'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      const maxTier = certList.length ? Math.max(...certList.map(c => c.tier)) : 0;
+      document.getElementById('cTier').value = maxTier + 1;
+      selectedCertColorIdx = 0;
+      document.querySelectorAll('.cert-color-swatch').forEach((s, i) => s.classList.toggle('selected', i === 0));
+      certModuleTags = [];
+      renderModuleTags();
+    }
+
+    function initCertColorSwatches() {
+      document.getElementById('certColorSwatches').innerHTML = CERT_COLORS.map((c, i) => `
+        <div class="cert-color-swatch ${i === 0 ? 'selected' : ''}"
+          style="background:${c.border}" title="${c.name}"
+          onclick="selectCertColor(${i})"></div>`).join('');
+    }
+
+    function selectCertColor(i) {
+      selectedCertColorIdx = i;
+      document.querySelectorAll('.cert-color-swatch').forEach((s, idx) => s.classList.toggle('selected', idx === i));
+    }
+
+    /* Module tags */
+    function handleModuleTag(e) {
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        const val = e.target.value.trim().replace(/,+$/, '');
+        if (val) { certModuleTags.push(val); e.target.value = ''; renderModuleTags(); }
+      } else if (e.key === 'Backspace' && !e.target.value && certModuleTags.length) {
+        certModuleTags.pop(); renderModuleTags();
+      }
+    }
+    function removeModuleTag(i) { certModuleTags.splice(i, 1); renderModuleTags(); }
+    function renderModuleTags() {
+      const wrap  = document.getElementById('modulesTagWrap');
+      const input = document.getElementById('moduleTagInput');
+      wrap.querySelectorAll('.cert-tag').forEach(t => t.remove());
+      certModuleTags.forEach((tag, i) => {
+        const span = document.createElement('span');
+        span.className = 'cert-tag';
+        span.innerHTML = `${tag} <button type="button" onclick="removeModuleTag(${i})">×</button>`;
+        wrap.insertBefore(span, input);
+      });
+    }
+
+    function saveCert() {
+      const name       = document.getElementById('cName').value.trim();
+      const shortName  = document.getElementById('cShortName').value.trim();
+      const role       = document.getElementById('cRole').value.trim();
+      const tier       = parseInt(document.getElementById('cTier').value);
+      const desc       = document.getElementById('cDesc').value.trim();
+      const quizzes    = document.getElementById('cQuizzes').value.trim();
+      const assessment = document.getElementById('cAssessment').value.trim();
+
+      if (!name)  { alert('Please enter a certificate name.'); return; }
+      if (!role)  { alert('Please enter the eligible role.'); return; }
+      if (!tier || isNaN(tier)) { alert('Please enter a tier level.'); return; }
+      if (!certModuleTags.length) { alert('Please add at least one required module.'); return; }
+      if (!quizzes)    { alert('Please describe the quizzes required.'); return; }
+      if (!assessment) { alert('Please enter the assessment name.'); return; }
+
+      const col = CERT_COLORS[selectedCertColorIdx];
+      certList.push({
+        id:           'cert-custom-' + Date.now(),
+        tier, shortName: shortName || name.split(' ').slice(0, 2).join(' '),
+        name, sub: desc, roleEligible: role,
+        tierColor: col.color, tierBg: col.bg, borderColor: col.border,
+        modules: [...certModuleTags], quizzes, assessment, holders: 0,
+      });
+
+      renderCertBadges();
+      initCertFilters();
+      cancelCertForm();
+    }
+
+    function removeCert(id) {
+      if (!confirm('Remove this certification?')) return;
+      certList = certList.filter(c => c.id !== id);
+      if (activeCertFilter === id) activeCertFilter = 'all';
+      if (activeCertBadgeId === id) {
+        activeCertBadgeId = null;
+        document.getElementById('certCriteriaPanel').style.display = 'none';
+      }
+      renderCertBadges();
+      initCertFilters();
+      applyHolderFilters(document.getElementById('certSearch').value.toLowerCase(), activeCertFilter);
+    }
+
+    /* ── Filter + table ── */
+    function initCertFilters() {
+      const sorted = [...certList].sort((a, b) => b.tier - a.tier);
+      document.getElementById('certFilterBar').innerHTML = `
+        <button class="cert-filter-pill ${activeCertFilter==='all'?'active':''}" onclick="filterCertHolders('all',this)">All Tiers</button>
+        ${sorted.map(c => `
+          <button class="cert-filter-pill ${activeCertFilter===c.id?'active':''}" onclick="filterCertHolders('${c.id}',this)">
+            T${c.tier} · ${c.shortName}
+          </button>`).join('')}`;
+    }
+
+    function filterCertHolders(certId, btn) {
+      activeCertFilter = certId;
+      document.querySelectorAll('.cert-filter-pill').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      applyHolderFilters(document.getElementById('certSearch').value.toLowerCase(), certId);
+    }
+
+    function searchCertHolders() {
+      applyHolderFilters(document.getElementById('certSearch').value.toLowerCase(), activeCertFilter);
+    }
+
+    function applyHolderFilters(q, certId) {
+      let data = CERT_HOLDERS;
+      if (certId !== 'all') data = data.filter(h => h.certId === certId);
+      if (q) data = data.filter(h => {
+        const cert = certList.find(c => c.id === h.certId);
+        return h.name.toLowerCase().includes(q) || (cert && cert.name.toLowerCase().includes(q));
+      });
+      renderCertHolders(data);
+    }
+
+    function renderCertHolders(data) {
+      const tbody = document.getElementById('certBody');
+      document.getElementById('certHolderCount').textContent =
+        data.length + ' certificate' + (data.length !== 1 ? 's' : '');
+
+      if (data.length === 0) {
+        tbody.innerHTML = `<tr class="empty-row"><td colspan="7">No certificates found.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = data.map((h, i) => {
+        const cert = certList.find(c => c.id === h.certId);
+        if (!cert) return '';
+        const rs  = getRoleStyle(cert.roleEligible);
+        const cid = genCertId(h.name, cert.tier);
+        return `
+          <tr>
+            <td><span class="sno">${String(i+1).padStart(2,'0')}</span></td>
+            <td>
+              <div class="user-cell">
+                <div class="avatar" style="background:${AVATAR_COLORS[i % AVATAR_COLORS.length]}">${initials(h.name)}</div>
+                <div>
+                  <div class="user-name">${h.name}</div>
+                  <div class="user-email">${h.email}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="cert-table-badge" style="background:${cert.tierBg};color:${cert.tierColor};border:1px solid ${cert.borderColor}55">
+                T${cert.tier} · ${cert.shortName}
+              </span>
+            </td>
+            <td>
+              <span class="cert-role-sm" style="background:${rs.bg};color:${rs.color};border:1px solid ${rs.border}">
+                ${cert.roleEligible}
+              </span>
+            </td>
+            <td><div class="date-cell">${h.date}</div></td>
+            <td><span class="cert-status-${h.status}">${h.status === 'active' ? 'Active' : 'Pending'}</span></td>
+            <td>
+              <button class="cert-view-btn" onclick="openCertPreview('${h.certId}','${h.name}','${h.date}','${cid}')" title="View certificate">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
+    initCertColorSwatches();
+    renderCertBadges();
+    initCertFilters();
+    renderCertHolders(CERT_HOLDERS);
+
+    /* ── Certificate Preview ── */
+    function genCertId(name, tier) {
+      let h = 0;
+      for (let i = 0; i < name.length; i++) h = ((h << 5) - h + name.charCodeAt(i)) | 0;
+      return 'ST' + tier + '-' + Math.abs(h).toString(16).toUpperCase().padStart(6, '0');
+    }
+
+    function openCertPreview(certId, holderName, holderDate, certIdCode) {
+      const cert = certList.find(c => c.id === certId);
+      if (!cert) return;
+
+      const isTemplate = !holderName;
+      const rs = getRoleStyle(cert.roleEligible);
+      const displayName = holderName
+        ? `<span style="color:${cert.borderColor}">${holderName}</span>`
+        : `<span style="color:#bbb;font-size:22px;font-style:normal;letter-spacing:2px">[ EMPLOYEE NAME ]</span>`;
+      const dateStr  = holderDate  || '—';
+      const idStr    = certIdCode  || 'PREVIEW';
+      const wordPart = (cert.shortName || '').split(' ')[0].toUpperCase();
+
+      document.getElementById('certPreviewLabel').textContent =
+        isTemplate ? 'Template Preview – ' + cert.shortName : cert.shortName + ' Certificate – ' + holderName;
+
+      const cornerSvg = color => `
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <path d="M11 1 L13 8 L20 8 L14.5 12.5 L16.5 19.5 L11 15 L5.5 19.5 L7.5 12.5 L2 8 L9 8 Z"
+            fill="${color}" opacity="0.35"/>
+        </svg>`;
+
+      document.getElementById('certPreviewBody').innerHTML = `
+        ${isTemplate ? '<div class="cert-template-notice">This is a template preview — the recipient name and date will be filled automatically when the certificate is issued.</div>' : ''}
+        <div class="certificate-paper">
+          <div class="cert-watermark">SEATRACE</div>
+
+          <div class="cert-border-outer" style="border-color:${cert.borderColor}"></div>
+          <div class="cert-border-inner" style="border-color:${cert.borderColor}30"></div>
+
+          <div class="cert-co cert-co-tl">${cornerSvg(cert.borderColor)}</div>
+          <div class="cert-co cert-co-tr">${cornerSvg(cert.borderColor)}</div>
+          <div class="cert-co cert-co-bl">${cornerSvg(cert.borderColor)}</div>
+          <div class="cert-co cert-co-br">${cornerSvg(cert.borderColor)}</div>
+
+          <div class="cert-content">
+            <!-- Header row -->
+            <div class="cert-header-row">
+              <div class="cert-brand-block">
+                <svg width="32" height="32" viewBox="0 0 34 34" fill="none">
+                  <circle cx="17" cy="17" r="15.5" stroke="${cert.borderColor}" stroke-width="1.5"/>
+                  <path d="M10 22 C12 16 14.5 11 17 17 C19.5 23 22 18 24 12"
+                    stroke="${cert.borderColor}" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+                  <circle cx="17" cy="17" r="1.6" fill="${cert.borderColor}"/>
+                </svg>
+                <div>
+                  <div class="cert-brand-name">
+                    <span style="color:${cert.borderColor}">SEA</span>TRACE
+                  </div>
+                  <div class="cert-brand-sub">Processing Excellence</div>
+                </div>
+              </div>
+
+              <!-- Medal -->
+              <div class="cert-medal-wrap">
+                <div class="cert-ribbon" style="background:${cert.tierColor}"></div>
+                <div class="cert-medal" style="background:${cert.tierColor};
+                  box-shadow: 0 0 0 5px ${cert.tierBg}, 0 0 0 9px ${cert.borderColor}66,
+                              0 8px 24px rgba(0,0,0,0.2)">
+                  <div class="cert-medal-inner" style="background:${cert.tierBg}">
+                    <div class="cert-medal-tier" style="color:${cert.tierColor}">T${cert.tier}</div>
+                    <div class="cert-medal-word" style="color:${cert.tierColor}">${wordPart}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Main title -->
+            <div class="cert-title-block">
+              <div class="cert-title-main">CERTIFICATE</div>
+              <div class="cert-title-of">OF COMPLETION</div>
+            </div>
+
+            <div class="cert-h-divider" style="background:linear-gradient(to right,transparent,${cert.borderColor}50,transparent)"></div>
+
+            <!-- Recipient -->
+            <div class="cert-presented-label">PROUDLY PRESENTED TO</div>
+            <div class="cert-user-name">${displayName}</div>
+            <div class="cert-user-name-underline"></div>
+
+            <!-- Course -->
+            <div class="cert-completion-label">FOR THE SUCCESSFUL COMPLETION OF</div>
+            <div class="cert-course-title">${cert.name}</div>
+
+            <div class="cert-tier-row">
+              <span class="cert-tier-pill"
+                style="background:${cert.tierBg};color:${cert.tierColor};border:1px solid ${cert.borderColor}55">
+                Tier ${cert.tier} · ${cert.shortName}
+              </span>
+              <span class="cert-eligible-pill"
+                style="background:${rs.bg};color:${rs.color};border:1px solid ${rs.border}">
+                → Eligible for ${cert.roleEligible}
+              </span>
+            </div>
+
+            <!-- Footer -->
+            <div class="cert-footer-divider"
+              style="background:linear-gradient(to right,transparent,${cert.borderColor}44,transparent)"></div>
+            <div class="cert-footer-row">
+              <div class="cert-footer-item">
+                <div class="cert-footer-sig">${certAuthority.name}</div>
+                <div class="cert-footer-underline"></div>
+                <div class="cert-footer-label">${certAuthority.title.toUpperCase()}</div>
+              </div>
+              <div class="cert-footer-item">
+                <div class="cert-footer-val">${dateStr}</div>
+                <div class="cert-footer-underline"></div>
+                <div class="cert-footer-label">DATE</div>
+              </div>
+              <div class="cert-footer-item">
+                <div class="cert-footer-val cert-footer-id">${idStr}</div>
+                <div class="cert-footer-underline"></div>
+                <div class="cert-footer-label">CERTIFICATE ID</div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+
+      document.getElementById('certPreviewModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeCertPreview() {
+      document.getElementById('certPreviewModal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  </script>
+
+  <!-- Certificate Preview Modal -->
+  <div id="certPreviewModal" class="cert-preview-overlay"
+    onclick="if(event.target===this)closeCertPreview()">
+    <div class="cert-preview-box">
+      <div class="cert-preview-toolbar">
+        <span class="cert-preview-label" id="certPreviewLabel">Certificate Preview</span>
+        <button class="btn-ghost" onclick="closeCertPreview()"
+          style="padding:4px 12px;font-size:12px;display:flex;align-items:center;gap:5px">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+          Close
+        </button>
+      </div>
+      <div class="cert-preview-body" id="certPreviewBody"></div>
+    </div>
+  </div>
+
+</body>
+</html>
