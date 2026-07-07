@@ -1189,40 +1189,13 @@
       });
     })();
 
-    /* ── Seed default video/voice/doc library to localStorage so class-viewer always has content ── */
-    (function _seedContentLibrary() {
+    /* ── One-time reset: clear all stale LMS data so knowledge hub starts clean ── */
+    (function _resetLmsData() {
       try {
-        var DEFAULT_VIDEOS = [
-          {id:'v1',  title:'Beheading Safety & Hygiene',        module:'Forms',           cls:'Beheading',           duration:'12 min', status:'live'},
-          {id:'v2',  title:'Grading Standards Overview',         module:'Forms',           cls:'Grading',             duration:'9 min',  status:'live'},
-          {id:'v3',  title:'Peeling Techniques & Safety',        module:'Forms',           cls:'Peeling & Cutting',   duration:'11 min', status:'live'},
-          {id:'v4',  title:'De-veining Process Guide',           module:'Forms',           cls:'De-veining',          duration:'8 min',  status:'live'},
-          {id:'v5',  title:'Weighing & Packing Standards',       module:'Forms',           cls:'Weighing & Packing',  duration:'10 min', status:'live'},
-          {id:'v6',  title:'IQF Freezing Fundamentals',          module:'Forms',           cls:'IQF Freezing',        duration:'14 min', status:'live'},
-          {id:'v7',  title:'Cold Store Inward Procedures',       module:'Forms',           cls:'Cold Store Inward',   duration:'7 min',  status:'live'},
-          {id:'v8',  title:'Cold Store Outward & Dispatch',      module:'Forms',           cls:'Cold Store Outward',  duration:'9 min',  status:'live'},
-          {id:'v9',  title:'Supplier KYC Documentation',         module:'Master Forms',    cls:'Supplier Registration',duration:'15 min',status:'live'},
-          {id:'v10', title:'Raw Material Receiving Guide',       module:'Master Forms',    cls:'Raw Material Intake', duration:'11 min', status:'live'},
-          {id:'v11', title:'Batch ID & Traceability',            module:'Master Forms',    cls:'Batch Traceability',  duration:'12 min', status:'live'},
-          {id:'v12', title:'Equipment Maintenance Log',          module:'Master Forms',    cls:'Equipment Log',       duration:'8 min',  status:'live'},
-          {id:'v13', title:'Staff Onboarding Records',           module:'Master Forms',    cls:'Staff Records',       duration:'6 min',  status:'live'},
-          {id:'v14', title:'Organoleptic Testing Methods',       module:'Quality Control', cls:'Organoleptic Test',   duration:'13 min', status:'live'},
-          {id:'v15', title:'Microbiological Sampling',           module:'Quality Control', cls:'Microbiological Check',duration:'10 min',status:'live'},
-          {id:'v16', title:'Chemical Testing Protocols',         module:'Quality Control', cls:'Chemical Analysis',   duration:'12 min', status:'live'},
-          {id:'v17', title:'Packaging Compliance Check',         module:'Quality Control', cls:'Packaging Inspection',duration:'9 min',  status:'live'},
-          {id:'v18', title:'Final Product Release Procedure',    module:'Quality Control', cls:'Final Release',       duration:'7 min',  status:'live'}
-        ];
-        var stored = [];
-        try { stored = JSON.parse(localStorage.getItem('lms_video_library') || '[]'); } catch(e) {}
-        // Merge: prefer stored version for existing IDs, append missing defaults
-        var merged = DEFAULT_VIDEOS.map(function(v) {
-          var s = stored.find(function(x){ return x.id === v.id; });
-          return s ? Object.assign({}, v, s) : Object.assign({}, v);
-        });
-        stored.forEach(function(v) {
-          if (!merged.find(function(x){ return x.id === v.id; })) merged.push(v);
-        });
-        localStorage.setItem('lms_video_library', JSON.stringify(merged));
+        if (localStorage.getItem('lms_version') !== 'v3') {
+          Object.keys(localStorage).filter(function(k){ return k.startsWith('lms_') || k.startsWith('sq_'); }).forEach(function(k){ localStorage.removeItem(k); });
+          localStorage.setItem('lms_version', 'v3');
+        }
       } catch(e) {}
     })();
 

@@ -8723,48 +8723,6 @@
       { id:'v18', title:'Final Product Release Procedure',    module:'Quality Control', cls:'Final Release',        duration:'7 min',  status:'draft' },
     ];
 
-    /* ── Seed localStorage with all defaults so class-viewer can access them ── */
-    (function _seedLibraryToLocalStorage() {
-      try {
-        var strip = function(arr) { return arr.map(function(v){ var o=Object.assign({},v); delete o.blobUrl; return o; }); };
-
-        // Videos: merge stored overrides onto hardcoded defaults, append new uploaded items
-        var _storedV = [];
-        try { _storedV = JSON.parse(localStorage.getItem('lms_video_library') || '[]'); } catch(e) {}
-        var merged = VIDEO_LIBRARY.map(function(v) {
-          var s = _storedV.find(function(s){ return s.id === v.id; });
-          return s ? Object.assign({}, v, s) : Object.assign({}, v);
-        });
-        _storedV.forEach(function(v) {
-          if (!merged.find(function(x){ return x.id === v.id; })) merged.push(v);
-        });
-        localStorage.setItem('lms_video_library', JSON.stringify(strip(merged)));
-
-        // Voiceovers
-        var _storedVo = [];
-        try { _storedVo = JSON.parse(localStorage.getItem('lms_voiceover_library') || '[]'); } catch(e) {}
-        var mergedVo = (CONTENT_LIBRARY.voiceover || []).map(function(v) {
-          var s = _storedVo.find(function(s){ return s.id === v.id; });
-          return s ? Object.assign({}, v, s) : Object.assign({}, v);
-        });
-        _storedVo.forEach(function(v) {
-          if (!mergedVo.find(function(x){ return x.id === v.id; })) mergedVo.push(v);
-        });
-        localStorage.setItem('lms_voiceover_library', JSON.stringify(strip(mergedVo)));
-
-        // Documents
-        var _storedDl = [];
-        try { _storedDl = JSON.parse(localStorage.getItem('lms_document_library') || '[]'); } catch(e) {}
-        var mergedDl = (CONTENT_LIBRARY.document || []).map(function(v) {
-          var s = _storedDl.find(function(s){ return s.id === v.id; });
-          return s ? Object.assign({}, v, s) : Object.assign({}, v);
-        });
-        _storedDl.forEach(function(v) {
-          if (!mergedDl.find(function(x){ return x.id === v.id; })) mergedDl.push(v);
-        });
-        localStorage.setItem('lms_document_library', JSON.stringify(strip(mergedDl)));
-      } catch(e) {}
-    })();
 
     /* Module → certification mapping (first cert fully unlocked by completing this module) */
     const HUB_MODULE_CERT = {
