@@ -3548,21 +3548,22 @@
     }
 
     function _confirmUpload() {
-      const mod  = document.getElementById('udmModule').value;
-      const cls  = document.getElementById('udmClass').value;
-      const title = (document.getElementById('udmTitle').value||'').trim() || 'Untitled';
+      const mod      = document.getElementById('udmModule').value;
+      const cls      = document.getElementById('udmClass').value;
+      const title    = (document.getElementById('udmTitle').value||'').trim() || 'Untitled';
       const duration = (document.getElementById('udmDuration').value||'').trim();
-      const desc = (document.getElementById('udmDesc').value||'').trim();
-      const status = document.getElementById('udmStatus').value;
-      const file = _udmFile; const type = _udmType;
+      const desc     = (document.getElementById('udmDesc').value||'').trim();
+      const status   = document.getElementById('udmStatus').value;
+      const file     = _udmFile;
+      const type     = _udmType;
 
-      // ── Edit mode: update existing item ──
+      // ── Edit mode: update metadata only (no re-upload) ──
       if (_udmEditId) {
         const editId = _udmEditId;
         _closeUploadModal();
-        let item = type === 'video'
-          ? _videoLibrary.find(v => v.id === editId)
-          : (CONTENT_LIBRARY[type]||[]).find(v => v.id === editId);
+        var item = type === 'video'
+          ? _videoLibrary.find(function(v){ return v.id === editId; })
+          : (CONTENT_LIBRARY[type]||[]).find(function(v){ return v.id === editId; });
         if (item) {
           item.title = title; item.module = mod; item.cls = cls;
           item.duration = duration; item.desc = desc;
@@ -3575,23 +3576,43 @@
         return;
       }
 
-      // ── Upload mode: add new item ──
-      const dateStr = cpDateStr();
-      const itemId = type === 'video' ? 'vu'+Date.now() : type === 'voiceover' ? 'v'+Date.now() : 'd'+Date.now();
-      const blobUrl = file ? URL.createObjectURL(file) : '';
-      if (file) _storeMediaFile(itemId, file);
-      _closeUploadModal();
-      if (type === 'video') {
-        _videoLibrary.unshift({ id:itemId, title, module:mod, cls, duration, desc, status, blobUrl, file:file?file.name:'', _adminUploaded:true });
-        renderVideoPanel();
-      } else if (type === 'voiceover') {
-        CONTENT_LIBRARY.voiceover.unshift({ id:itemId, title, module:mod, cls, desc, file:file?file.name:'', blobUrl, date:dateStr, duration:duration||'0:00', status, script:[{start:'00:00',end:'00:08',en:'',hi:'',te:''}], _adminUploaded:true });
-        renderContentPanel('voiceover');
-      } else if (type === 'document') {
-        CONTENT_LIBRARY.document.unshift({ id:itemId, title, module:mod, cls, desc, file:file?file.name:'', blobUrl, date:dateStr, docType:'Guide', version:'v1.0', status, sections:[{heading:'Introduction',body:''}], _adminUploaded:true });
-        renderContentPanel('document');
-      }
-      _saveContentLibrary();
+      // ── Upload mode: POST file to server, get permanent URL back ──
+      if (!file) { alert('Please select a file first.'); return; }
+      var uploadBtn = document.querySelector('.udm-btn-upload');
+      if (uploadBtn) { uploadBtn.disabled = true; uploadBtn.innerHTML = 'Uploading…'; }
+
+      var endpointMap = { video: '/api/lms/upload/video', voiceover: '/api/lms/upload/audio', document: '/api/lms/upload/document' };
+      var endpoint = endpointMap[type] || '/api/lms/upload/document';
+      var dateStr = cpDateStr();
+      var fd = new FormData();
+      fd.append('file', file);
+
+      fetch(endpoint, { method: 'POST', body: fd })
+        .then(function(res) {
+          if (!res.ok) return res.text().then(function(t){ throw new Error(t || res.status); });
+          return res.json();
+        })
+        .then(function(data) {
+          var itemId = type === 'video' ? 'vu'+Date.now() : type === 'voiceover' ? 'v'+Date.now() : 'd'+Date.now();
+          var url = data.url;
+          _closeUploadModal();
+          if (type === 'video') {
+            _videoLibrary.unshift({ id:itemId, title:title, module:mod, cls:cls, duration:duration, desc:desc, status:status, url:url, file:file.name, _adminUploaded:true });
+            renderVideoPanel();
+          } else if (type === 'voiceover') {
+            CONTENT_LIBRARY.voiceover.unshift({ id:itemId, title:title, module:mod, cls:cls, desc:desc, file:file.name, url:url, date:dateStr, duration:duration||'0:00', status:status, script:[{start:'00:00',end:'00:08',en:'',hi:'',te:''}], _adminUploaded:true });
+            renderContentPanel('voiceover');
+          } else if (type === 'document') {
+            CONTENT_LIBRARY.document.unshift({ id:itemId, title:title, module:mod, cls:cls, desc:desc, file:file.name, url:url, date:dateStr, docType:'Guide', version:'v1.0', status:status, sections:[{heading:'Introduction',body:''}], _adminUploaded:true });
+            renderContentPanel('document');
+          }
+          _saveContentLibrary();
+        })
+        .catch(function(err) {
+          console.error('Upload error:', err);
+          alert('Upload failed — ' + (err.message || 'please try again.'));
+          if (uploadBtn) { uploadBtn.disabled = false; uploadBtn.innerHTML = 'Upload'; }
+        });
     }
 
     function _videoUploadFile(ev) {
@@ -3607,8 +3628,17 @@
 
     function _deleteVideo(id) {
       if (!confirm('Delete this video?')) return;
+      var item = _videoLibrary.find(function(v){ return v.id === id; });
+      if (item && item.url && item.url.startsWith('/uploads/lms/')) {
+        var parts = item.url.split('/');
+        var fname = parts[parts.length - 1];
+        var folder = parts[parts.length - 2]; // videos / audio / documents
+        var typeMap = { videos: 'video', audio: 'audio', documents: 'document' };
+        var t = typeMap[folder] || folder;
+        fetch('/api/lms/upload/' + t + '/' + fname, { method: 'DELETE' }).catch(console.error);
+      }
       _deleteMediaFile(id);
-      _videoLibrary = _videoLibrary.filter(v => v.id !== id);
+      _videoLibrary = _videoLibrary.filter(function(v){ return v.id !== id; });
       _saveContentLibrary();
       renderVideoPanel();
     }
